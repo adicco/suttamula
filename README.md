@@ -4,7 +4,7 @@
 
 # Suttamūla — Pāli Canon Translations
 
-Fresh, public domain translations of the Buddhist Pāli Canon (Tipitaka) from Pāli into English. The name _Suttamūla_ ("root of the suttas") reflects the project's aim: to return to the root meaning of the early texts.
+Fresh, public domain translations of the Buddhist Pāli Canon (Tipiṭaka) from Pāli into English. The name _Suttamūla_ ("root of the suttas") reflects the project's aim: to return to the root meaning of the early texts.
 
 This project intentionally leaves many core Pāli terms untranslated — words like _dhamma_, _dukkha_, _sati_, _jhāna_, _nibbāna_ — to minimize translation bias and encourage study of the original texts. Where Pāli terms are translated, the original word is given in brackets so the reader can always trace back to the source.
 
@@ -124,7 +124,9 @@ Segment IDs follow SuttaCentral conventions: `<sutta>:<section>.<segment>`.
 
 ## Supported by
 
-<img src="4nt-logo.png" alt="Early Buddhism Meditation Preservation Society" width="120"/>
+<a href="https://4nt.org" target="_blank">
+    <img src="4nt-logo.png" alt="Early Buddhism Meditation Preservation Society" width="120"/>
+</a>
 
 This project is supported by the [Early Buddhism Meditation Preservation Society](https://4nt.org) (EBMPS), a registered nonprofit in California.
 
