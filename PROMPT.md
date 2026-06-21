@@ -1,1 +1,1 @@
-./prompts/0.1.md
+prompts/0.2.md
