@@ -42,7 +42,9 @@ This is why we prefer to leave `sati` — and other key terms — untranslated, 
 
 ## How it works
 
-Translations are AI-assisted. A human-authored prompt defines the translation conventions — which terms to leave in Pāli, how to render compounds, what English style to use — and an LLM produces the translation from SuttaCentral's Pāli source texts.
+Translations are produced by large language models. We carefully crafted a prompt to define the translation conventions, and an LLM produces the translation from SuttaCentral's Pāli source texts.
+
+In certain cases, we will manually override certain translations. When doing so, an editorial footnote will be left to explain why (stored in `notes/`)
 
 The current prompt is [`PROMPT.md`](PROMPT.md). Previous prompt iterations are archived in [`prompts/`](prompts/).
 
@@ -53,20 +55,27 @@ Every prompt and every output is open-sourced so that the translation methodolog
 ```
 .
 ├── PROMPT.md                          # Current translation prompt -> symbolic link to ./prompts
-├── prompts/                           # Archived prompt versions (named by hash)
+├── prompts/                           # Archived prompt versions
 │   ├── 0.1.md
 │   ├── 0.2.md
+│   └── ...
 └── translation/                       # All translation output
-    ├── <prompt-version>/                 # Translations grouped by the prompt that produced them
+    ├── <prompt-version>/              # Translations grouped by the prompt that produced them
     │   └── <model>/                   # Grouped by the model used
     │       ├── an/                    # Anguttara Nikaya
-    │       │   └── an3/an3.65.json
+    │       │   └── an3/
+    │       │       └── an3.65.json
     │       ├── mn/                    # Majjhima Nikaya
     │       │   └── mn10.json
     │       ├── sn/                    # Samyutta Nikaya
-    │       │   └── sn12/sn12.1.json
-    │       └── ud/                    # Udana
-    │           └── ud8.1.json
+    │       │   └── sn12/
+    │       │       └── sn12.1.json
+    │       └── ...
+    └── notes/                         # Editorial notes, per segment
+        ├── [nikaya]/                   
+        │   └── [vagga [optional]]/
+        │       └── [sutta_id].json
+        └── ...
 ```
 
 Each translation file is a JSON document with segment IDs matching [SuttaCentral's](https://suttacentral.net) numbering system, making it straightforward to align translations with the Pāli source or other translations.
