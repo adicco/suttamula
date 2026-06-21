@@ -1,6 +1,6 @@
 ## Changelog
 
-### [`Prompt v0.2`](prompts/0.2.md) - 22/06/2026
+### [`Prompt v0.2`](prompts/0.2.md) - 06/22/2026
 
 #### Adding the brahmavihāra to the list of translated terms
 
@@ -47,7 +47,7 @@ Consciousness is so ubiquitous, and not really contentious. Reviewing v0.1 of th
 
 Once again, siding with Ṭhānissaro Bhikkhu on this one: discernment has a very 'active' quality to it, which feels very suitable as it *is* an active faculty of the mind. Less amorphous/general than 'wisdom' which can be used to mean all sorts of things in all sorts of context.
 
-### [`Prompt v0.1`](prompts/0.1.md) - 21/06/2026
+### [`Prompt v0.1`](prompts/0.1.md) - 06/21/2026
 
 Initial prompt. Established core principles:
 
