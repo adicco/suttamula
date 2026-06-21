@@ -47,6 +47,10 @@ Consciousness is so ubiquitous, and not really contentious. Reviewing v0.1 of th
 
 Once again, siding with Ṭhānissaro Bhikkhu on this one: discernment has a very 'active' quality to it, which feels very suitable as it *is* an active faculty of the mind. Less amorphous/general than 'wisdom' which can be used to mean all sorts of things in all sorts of context.
 
+#### Added a mention of negative forms
+
+There are negative Pāli terms, which imply the lack/non-doing of something, rather than the active doing of its opposite. This is, in my view, worth of note, as the direction of travel of the path is towards relinquishment. As such, it is fine, and likely more suitable, to translate them faithfully as `non-` rather than trying to find a 'positive', affirmative English translation (e.g. `non-harming`).
+
 ### [`Prompt v0.1`](prompts/0.1.md) - 06/21/2026
 
 Initial prompt. Established core principles:
