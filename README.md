@@ -92,11 +92,13 @@ Pāli source texts come from SuttaCentral's [bilara-data](https://github.com/sut
 
 ## Prompt history
 
-The translation prompt has evolved through several iterations. Each version is archived by its content hash in the [`prompts/`](prompts/) directory.
+The translation prompt will likely evolve through several iterations, as we review the translations gradually. Each version is archived by its content hash in the [`prompts/`](prompts/) directory.
 
 | Prompt                  | Key changes                                                                                                                                  |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`0.1`](prompts/0.1.md) | Initial prompt. Established core principles: untranslated Pāli terms, Early Buddhism First approach, no abbreviation of repetitive passages. |
+
+[`PROMPT.md`][./PROMPT.md] always links to the latest version.
 
 ## Contributing
 
