@@ -20,26 +20,29 @@ Consider `sati`, the best-known Buddhist term in modern discourse. It is almost 
 
 ```
 Katamañca, bhikkhave, satindriyaṁ?
+
 Idha, bhikkhave, ariyasāvako satimā hoti paramena satinepakkena samannāgato cirakatampi cirabhāsitampi saritā anussaritā—
+
 idaṁ vuccati, bhikkhave, satindriyaṁ.
 ```
 
-In Bhante Sujato’s translation:
+Which can be rendered as:
 
 ```
-And what is the faculty of mindfulness?
-It’s when a noble disciple is mindful. They have utmost mindfulness and alertness,
-and can remember and recall what was said and done long ago.
-This is called the faculty of mindfulness.
+And what, bhikkhus, is the faculty of mindfulness?
+
+Here, bhikkhus, a noble disciple is mindful, endowed with supreme mindfulness and alertness, remembering and recollecting what was done and said long ago—
+
+this, bhikkhus, is called the faculty of mindfulness.
 ```
 
-"Remembering and recalling what was said and done long ago" is not exactly how mindfulness is portrayed today.
+"Remembering and recollecting what was said and done long ago" is not exactly how mindfulness is portrayed today, to say the least.
 
 This is why we prefer to leave `sati` — and other key terms — untranslated, even in everyday use. When a Pāli word stays in our vocabulary, it resists the flattening that translation inevitably brings: each time we encounter it, we are drawn back to the original definition and compelled to sit with its full depth of meaning. An English gloss like "mindfulness" can feel settled and familiar, closing off inquiry; the Pāli term keeps the inquiry alive. (That said, "mindfulness" is probably still a reasonable rendering of the compound `sati-sampajaña`.)
 
 ## How it works
 
-Translations are AI-assisted. A human-authored prompt defines the translation conventions — which terms to leave in Pāli, how to render compounds, what English style to use — and an LLM produces the translation from SuttaCentral's bilingual source texts.
+Translations are AI-assisted. A human-authored prompt defines the translation conventions — which terms to leave in Pāli, how to render compounds, what English style to use — and an LLM produces the translation from SuttaCentral's Pāli source texts.
 
 The current prompt is [`PROMPT.md`](PROMPT.md). Previous prompt iterations are archived in [`prompts/`](prompts/).
 
