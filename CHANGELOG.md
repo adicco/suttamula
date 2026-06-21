@@ -41,11 +41,11 @@ The spectrum and range of the original Pāli should be understood to cover both 
 
 #### Translating `viññāṇa`
 
-Consciousness is so ubiquitous, and not really contentious. Reviewing v0.1 of the translations, it felt more fluid to translate it as consciousness.
+Consciousness is so ubiquitous, and not really contentious. Reviewing v0.1 of the translations, it felt more fluid to translate `viññāṇa` as consciousness.
 
 #### Translating `paññā`
 
-Once again, siding with Ṭhānissaro Bhikkhu on this one: discernment has a very 'active' quality to it, which feels very suitable as it *is* an active faculty of the mind. Less amorphous/general than 'wisdom' which is used in all sorts of ways.
+Once again, siding with Ṭhānissaro Bhikkhu on this one: discernment has a very 'active' quality to it, which feels very suitable as it *is* an active faculty of the mind. Less amorphous/general than 'wisdom' which can be used to mean all sorts of things in all sorts of context.
 
 ### [`Prompt v0.1`](prompts/0.1.md) - 21/06/2026
 
