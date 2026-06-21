@@ -10,7 +10,7 @@ I felt this would be a good opportunity to promote 'good-will' as the appropriat
 
 > Sorrow, lamentation, pain, distress, & despair are born from one who is dear, come springing from one who is dear.
 
-Thus, good-will seems not only much more in line with the 'higiher' Dhamma, it is also much more realistic to practice successfully.
+Thus, good-will seems not only much more in line with the 'higher' Dhamma, it is also much more realistic to practice successfully.
 
 #### `sampajāna`: from `clear comprehension` to `full awareness`
 
