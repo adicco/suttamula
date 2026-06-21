@@ -2,7 +2,7 @@
 
 ### [`Prompt v0.2`](prompts/0.2.md) - 22/06/2026
 
-##### Adding the brahmavihāra to the list of translated terms
+#### Adding the brahmavihāra to the list of translated terms
 
 I felt this would be a good opportunity to promote 'good-will' as the appropriate translation for `mettā`, thus siding with Thanissaro Bhikkhu on this one. Likewise for 'gladness', which works very well for `muditā`.
 
@@ -12,7 +12,7 @@ I felt this would be a good opportunity to promote 'good-will' as the appropriat
 
 Thus, good-will seems not only much more in line with the 'higiher' Dhamma, it is also much more realistic to practice successfully.
 
-##### `sampajāna`: from `clear comprehension` to `full awareness`
+#### `sampajāna`: from `clear comprehension` to `full awareness`
 
 When reviewing bits of the Canon where sampajāna is used, `clearly comprehending` felt too "profound" or "elevated" (almost on the level of `paññā`), as the world "comprehend" can carry quite a big of baggage (e.g. "comprehending the nature of the world"). However, the standard stock passages regarding `sampajāna` point to something much more mundane (although not easy to practice), such as knowing when one looks ahead, aside, walks, sits down, speaks, keeps silent, etc. Trying both translations for the stock passage:  
     
