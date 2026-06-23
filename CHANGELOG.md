@@ -34,7 +34,6 @@ When this faculty ripens (in its "higher" form), one is able to be aware of the 
 >
 > And what, bhikkhus, is the development of concentration that, when developed and cultivated, leads to mindfulness and full awareness? Here, bhikkhus, for a bhikkhu, feelings are known as they arise, known as they persist, known as they cease; perceptions are known as they arise... thoughts are known as they arise, known as they persist, known as they cease. This, bhikkhus, is the development of concentration that, when developed and cultivated, leads to mindfulness and full awareness .
 
-
 Which, at this point only, makes this quality converges towards discernment/insight (I venture that all path factors ultimately converge towards disenchantment and dispassion). I still feel that in that context, full awareness still works well as a translation, although "clear comprehension" would have a stronger case for it, in this particular instance.
 
 The spectrum and range of the original Pāli should be understood to cover both the mundane aspects, and the more refined ones, which are made possible by the development of concentration, as explained above.
