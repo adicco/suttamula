@@ -3,6 +3,7 @@ import Base from '../../../../layouts/Base.astro';
 import SuttaView from '../../../../components/SuttaView.astro';
 import TermDialog from '../../../../components/TermDialog.astro';
 import { getAllCombos, getLatestVersion, getSutta, resolveVersion, modelToSlug, slugToModel } from '../../../../lib/db';
+import { renderEnglishWithTerms } from '../../../../lib/terms';
 
 export function getStaticPaths() {
 	const combos = getAllCombos();
@@ -20,11 +21,13 @@ const { id, version: urlVersion, model: modelSlug } = Astro.params;
 const model = slugToModel(modelSlug!);
 const realVersion = resolveVersion(urlVersion!);
 const sutta = getSutta(id!);
-const title = sutta?.title_en?.trim() || sutta?.title_pali?.trim() || id!;
+const rawTitle = sutta?.title_en?.trim() || sutta?.title_pali?.trim() || id!;
+const plainTitle = rawTitle.replace(/[*[\]]/g, ''); // for the browser tab title
+const titleHtml = renderEnglishWithTerms(rawTitle, new Set()); // italics, no interactivity
 ---
-<Base title={title}>
+<Base title={plainTitle}>
 	<p class="eyebrow">{sutta?.nikaya?.toUpperCase()} · {id}</p>
-	<h1>{title}</h1>
+	<h1 set:html={titleHtml} />
 	<SuttaView suttaId={id!} version={realVersion} model={model!} urlVersion={urlVersion!} />
 	<TermDialog />
 </Base>
