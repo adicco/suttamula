@@ -1,0 +1,50 @@
+---
+import { getSuttasByNikaya, getDefaultCombo, getLatestVersion, modelToSlug } from '../lib/db';
+import { renderEnglishWithTerms } from '../lib/terms';
+
+interface Props { nikaya: string; }
+const { nikaya } = Astro.props;
+
+const latest = getLatestVersion();
+const suttas = getSuttasByNikaya(nikaya);
+
+// Group consecutive suttas by vagga (preserving order_key ordering).
+const groups: Array<{ vagga: string | null; items: typeof suttas }> = [];
+for (const s of suttas) {
+  const last = groups.at(-1);
+  if (last && last.vagga === s.vagga) last.items.push(s);
+  else groups.push({ vagga: s.vagga, items: [s] });
+}
+
+const titleHtml = (t: string | null) => renderEnglishWithTerms((t || '').trim(), new Set());
+const linkFor = (id: string) => {
+  const c = getDefaultCombo(id);
+  const v = c.version === latest ? 'latest' : c.version;
+  return `/sutta/${id}/${v}/${modelToSlug(c.model)}`;
+};
+---
+{groups.map((g) => (
+  <section class="vagga">
+    {g.vagga && <h3 class="vagga__head eyebrow">{g.vagga}</h3>}
+    <ul class="sutta-list">
+      {g.items.map((s) => (
+        <li>
+          <a href={linkFor(s.id)} class="sutta-link">
+            <span class="sutta-link__id">{s.id}</span>
+            <span class="sutta-link__title" set:html={titleHtml(s.title_en || s.title_pali)} />
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+))}
+
+<style>
+  .vagga { margin: 0 0 1.25rem; }
+  .vagga__head { font-size: 0.9rem; margin: 1rem 0 0.4rem; }
+  .sutta-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.2rem; }
+  .sutta-link { display: flex; align-items: baseline; gap: 0.7rem; padding: 0.2rem 0; }
+  .sutta-link__id { font-family: var(--sans); font-size: 0.72rem; color: var(--muted); min-width: 4.5rem; flex: none; }
+  .sutta-link__title { color: var(--ink); }
+  .sutta-link:hover .sutta-link__title { color: var(--oxblood); }
+</style>

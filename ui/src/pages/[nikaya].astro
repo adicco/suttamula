@@ -1,45 +1,24 @@
 ---
 import Base from '../layouts/Base.astro';
-import { getDefaultCombo, getLatestVersion, getNikayas, getSuttasByNikaya, modelToSlug } from '../lib/db';
-import { renderEnglishWithTerms } from '../lib/terms';
+import SuttaList from '../components/SuttaList.astro';
+import { getNikayas } from '../lib/db';
 
-const titleHtml = (t) => renderEnglishWithTerms((t || '').trim(), new Set());
+const NAMES: Record<string, string> = {
+	sn: 'The Connected Discourses',
+	mn: 'The Middle Length Discourses',
+	an: 'The Numerical Discourses',
+	ud: 'Inspired Utterances',
+	dn: 'The Long Discourses',
+};
 
 export function getStaticPaths() {
 	return getNikayas().map((n) => ({ params: { nikaya: n.nikaya } }));
 }
 
 const { nikaya } = Astro.params;
-const latest = getLatestVersion();
-const suttas = getSuttasByNikaya(nikaya!);
-const groups = [];
-for (const s of suttas) {
-	const last = groups.at(-1);
-	if (last && last.vagga === s.vagga) last.items.push(s);
-	else groups.push({ vagga: s.vagga, items: [s] });
-}
-const linkFor = (id) => {
-	const c = getDefaultCombo(id);
-	const v = c.version === latest ? 'latest' : c.version;
-	return `/sutta/${id}/${v}/${modelToSlug(c.model)}`;
-};
 ---
-<Base title={nikaya!.toUpperCase()}>
+<Base title={NAMES[nikaya!] ?? nikaya!.toUpperCase()}>
 	<p class="eyebrow">{nikaya!.toUpperCase()}</p>
-	<h1>Suttas</h1>
-	{groups.map((g) => (
-		<section style="margin-bottom:2rem">
-			{g.vagga && <h2 class="eyebrow" style="font-size:1rem">{g.vagga}</h2>}
-			<ul style="list-style:none;padding:0;margin:.5rem 0;display:grid;gap:.35rem">
-				{g.items.map((s) => <li><a href={linkFor(s.id)} class="sutta-link"><span class="sutta-link__id">{s.id}</span><span class="sutta-link__title" set:html={titleHtml(s.title_en || s.title_pali)} /></a></li>)}
-			</ul>
-		</section>
-	))}
+	<h1>{NAMES[nikaya!] ?? nikaya!.toUpperCase()}</h1>
+	<SuttaList nikaya={nikaya!} />
 </Base>
-
-<style>
-	.sutta-link { display: flex; align-items: baseline; gap: 0.7rem; padding: 0.2rem 0; }
-	.sutta-link__id { font-family: var(--sans); font-size: 0.74rem; color: var(--muted); min-width: 4rem; flex: none; }
-	.sutta-link__title { color: var(--ink); }
-	.sutta-link:hover .sutta-link__title { color: var(--oxblood); }
-</style>
