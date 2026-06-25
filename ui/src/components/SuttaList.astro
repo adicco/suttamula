@@ -31,7 +31,9 @@ const linkFor = (id: string) => {
         <li>
           <a href={linkFor(s.id)} class="sutta-link">
             <span class="sutta-link__id">{s.id}</span>
-            <span class="sutta-link__title" set:html={titleHtml(s.title_en || s.title_pali)} />
+            {s.title_en?.trim()
+              ? <span class="sutta-link__title" set:html={titleHtml(s.title_en)} />
+              : <span class="sutta-link__title sutta-link__title--pali">{(s.title_pali || s.id).trim()}</span>}
           </a>
         </li>
       ))}
@@ -46,5 +48,6 @@ const linkFor = (id: string) => {
   .sutta-link { display: flex; align-items: baseline; gap: 0.7rem; padding: 0.2rem 0; }
   .sutta-link__id { font-family: var(--sans); font-size: 0.72rem; color: var(--muted); min-width: 4.5rem; flex: none; }
   .sutta-link__title { color: var(--ink); }
+  .sutta-link__title--pali { font-style: italic; opacity: 0.8; }
   .sutta-link:hover .sutta-link__title { color: var(--oxblood); }
 </style>

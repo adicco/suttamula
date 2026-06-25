@@ -21,13 +21,18 @@ const { id, version: urlVersion, model: modelSlug } = Astro.params;
 const model = slugToModel(modelSlug!);
 const realVersion = resolveVersion(urlVersion!);
 const sutta = getSutta(id!);
-const rawTitle = sutta?.title_en?.trim() || sutta?.title_pali?.trim() || id!;
+const hasEn = !!sutta?.title_en?.trim();
+const rawTitle = hasEn ? sutta!.title_en!.trim() : (sutta?.title_pali?.trim() || id!);
 const plainTitle = rawTitle.replace(/[*[\]]/g, ''); // for the browser tab title
 const titleHtml = renderEnglishWithTerms(rawTitle, new Set()); // italics, no interactivity
 ---
 <Base title={plainTitle}>
 	<p class="eyebrow">{sutta?.nikaya?.toUpperCase()} · {id}</p>
-	<h1 set:html={titleHtml} />
+	<h1 class:list={[{ 'h1--pali': !hasEn }]} set:html={titleHtml} />
 	<SuttaView suttaId={id!} version={realVersion} model={model!} urlVersion={urlVersion!} />
 	<TermDialog />
 </Base>
+
+<style>
+	.h1--pali { font-style: italic; opacity: 0.8; }
+</style>

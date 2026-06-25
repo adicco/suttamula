@@ -45,12 +45,18 @@ function buildPaliIndex(root) {
 	return index;
 }
 
-// Title segment is the `:0.3` segment. For range files (e.g. an1.316-332) the
-// keys carry the sub-sutta id, so fall back to the first key ending in :0.3.
-function titleFromMap(suttaId, map) {
-	if (map[`${suttaId}:0.3`] != null) return map[`${suttaId}:0.3`];
-	const key = Object.keys(map).find((k) => k.endsWith(':0.3'));
-	return key ? map[key] : null;
+// The sutta title is the last header segment (section 0) before the text begins.
+// Its position varies: MN has no vagga line so the title is :0.2, while SN/AN
+// carry a vagga line and the title is :0.3. Walk in source order, keep the last
+// :0.x value, and stop at the first non-header segment.
+function titleFromMap(map) {
+	let title = null;
+	for (const [key, value] of Object.entries(map)) {
+		const seg = key.split(':').pop();
+		if (/^0\.\d+$/.test(seg)) title = value;
+		else if (/^\d+\.\d+$/.test(seg)) break;
+	}
+	return title != null ? String(title).trim() : null;
 }
 
 mkdirSync(DB_DIR, { recursive: true });
@@ -116,8 +122,8 @@ if (existsSync(TRANSLATION_ROOT)) {
 				id: meta.suttaId,
 				nikaya: meta.nikaya,
 				vagga: meta.vagga,
-				title_pali: titleFromMap(meta.suttaId, paliMap),
-				title_en: titleFromMap(meta.suttaId, enMap),
+				title_pali: titleFromMap(paliMap),
+				title_en: titleFromMap(enMap),
 				order_key: suttaSortKey(meta.suttaId),
 			});
 		}
