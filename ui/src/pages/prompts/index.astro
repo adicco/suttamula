@@ -1,0 +1,11 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPromptVersions } from '../../lib/db';
+---
+<Base title="Prompts">
+	<p class="eyebrow">Prompt transparency</p>
+	<h1>Prompts</h1>
+	<ul>
+		{getPromptVersions().map((version) => <li><a href={`/prompts/${version}`}>{version}</a></li>)}
+	</ul>
+</Base>

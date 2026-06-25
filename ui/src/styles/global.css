@@ -1,0 +1,29 @@
+@font-face{font-family:'Coelacanth';src:url('/fonts/Coelacanth.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Coelacanth';src:url('/fonts/Coelacanth-Italic.woff2') format('woff2');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Geist';src:url('/fonts/Geist.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+:root{--oxblood:#752803;--parchment:#FBF8F2;--sand:#EFE7D9;--ink:#2A2018;--muted:#8A7E6E;--serif:'Coelacanth',Georgia,serif;--sans:'Geist',system-ui,sans-serif;--measure:34rem}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--parchment);color:var(--ink);font-family:var(--serif);font-size:1.125rem;line-height:1.62}
+a{color:var(--oxblood);text-decoration:none}
+a:hover{color:var(--ink)}
+.lede a,.prose a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;text-decoration-color:var(--sand)}
+.lede a:hover,.prose a:hover{text-decoration-color:var(--oxblood);color:var(--oxblood)}
+main{max-width:64rem;margin:0 auto;padding:2.5rem 1.5rem 6rem}
+
+h1{font-family:var(--serif);font-weight:400;font-size:2.1rem;line-height:1.15;letter-spacing:.005em;margin:.2rem 0 1.5rem}
+h2{font-family:var(--serif);font-weight:400}
+.lede{max-width:var(--measure);color:#4a3d30}
+
+.site-header{font-family:var(--sans);border-bottom:1px solid var(--sand);padding:1rem 1.5rem;display:flex;align-items:center;gap:.75rem}
+.site-header a{text-decoration:none;color:var(--ink)}
+.site-header .wordmark{font-family:var(--serif);font-size:1.4rem;letter-spacing:.01em}
+
+.eyebrow{font-family:var(--serif);font-variant:small-caps;letter-spacing:.12em;color:var(--oxblood);font-size:.95rem}
+.tabs,.meta,.seg-no,nav.browse,.toolbar{font-family:var(--sans)}
+
+.pali-term{font-style:italic;cursor:pointer;color:var(--oxblood);border-bottom:1px dotted transparent;transition:border-color .15s}
+.pali-term:hover,.pali-term:focus{border-bottom-color:var(--oxblood)}
+
+:focus-visible{outline:2px solid var(--oxblood);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

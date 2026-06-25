@@ -1,0 +1,28 @@
+---
+import '../styles/global.css';
+import Dhammacakka from '../components/Dhammacakka.astro';
+interface Props { title: string; }
+const { title } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title} · Suttamūla</title>
+		<script src="/htmx.min.js" defer></script>
+	</head>
+	<body>
+		<header class="site-header">
+			<a href="/" style="display:flex;align-items:center;gap:.6rem;color:var(--oxblood)">
+				<Dhammacakka size={28} />
+				<span class="wordmark" style="color:var(--ink)">Suttamūla</span>
+			</a>
+			<nav class="meta" style="margin-left:auto;display:flex;gap:1.25rem">
+				<a href="/terms">Terms</a>
+				<a href="/prompts">Prompts</a>
+			</nav>
+		</header>
+		<main><slot /></main>
+	</body>
+</html>

@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+import TermDialog from '../components/TermDialog.astro';
+import { getCollection } from 'astro:content';
+
+const defs = (await getCollection('definitions')).sort((a, b) => a.id.localeCompare(b.id));
+---
+<Base title="Pāli Terms">
+	<p class="eyebrow">Editorial choices</p>
+	<h1>Pāli Terms</h1>
+	<p class="lede">Why each term is left untranslated, or how it is rendered. These choices are
+		open to inspection — click a term for the note behind it.</p>
+	<ul class="term-list">
+		{defs.map((entry) => (
+			<li class="term-item">
+				<span class="pali-term term-item__name" data-term={entry.id}>{entry.id}</span>
+				{entry.data.tooltip && <span class="term-item__gloss">{entry.data.tooltip}</span>}
+			</li>
+		))}
+	</ul>
+	<TermDialog />
+</Base>
+
+<style>
+	.term-list { list-style: none; padding: 0; margin: 2rem 0 0; display: grid; gap: 1rem; }
+	.term-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.8rem; }
+	.term-item__name { font-size: 1.2rem; }
+	.term-item__gloss { color: #4a3d30; max-width: var(--measure); }
+</style>

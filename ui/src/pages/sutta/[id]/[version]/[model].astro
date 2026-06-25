@@ -1,0 +1,30 @@
+---
+import Base from '../../../../layouts/Base.astro';
+import SuttaView from '../../../../components/SuttaView.astro';
+import TermDialog from '../../../../components/TermDialog.astro';
+import { getAllCombos, getLatestVersion, getSutta, resolveVersion, modelToSlug, slugToModel } from '../../../../lib/db';
+
+export function getStaticPaths() {
+	const combos = getAllCombos();
+	const latest = getLatestVersion();
+	const paths = [];
+	for (const c of combos) {
+		const model = modelToSlug(c.model);
+		paths.push({ params: { id: c.suttaId, version: c.version, model } });
+		if (c.version === latest) paths.push({ params: { id: c.suttaId, version: 'latest', model } });
+	}
+	return paths;
+}
+
+const { id, version: urlVersion, model: modelSlug } = Astro.params;
+const model = slugToModel(modelSlug!);
+const realVersion = resolveVersion(urlVersion!);
+const sutta = getSutta(id!);
+const title = sutta?.title_en?.trim() || sutta?.title_pali?.trim() || id!;
+---
+<Base title={title}>
+	<p class="eyebrow">{sutta?.nikaya?.toUpperCase()} · {id}</p>
+	<h1>{title}</h1>
+	<SuttaView suttaId={id!} version={realVersion} model={model!} urlVersion={urlVersion!} />
+	<TermDialog />
+</Base>

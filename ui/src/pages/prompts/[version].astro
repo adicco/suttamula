@@ -1,0 +1,37 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPrompt, getPromptVersions } from '../../lib/db';
+import { marked } from 'marked';
+
+export function getStaticPaths() {
+	return getPromptVersions().map((version) => ({ params: { version } }));
+}
+
+const { version } = Astro.params;
+const body = getPrompt(version!);
+---
+<Base title={`Prompt ${version}`}>
+	<p class="eyebrow">Prompt transparency · {version}</p>
+	<h1>Translation prompt</h1>
+	<p class="lede">The exact instructions given to the model that produced these translations.
+		Reproduced in full, unedited.</p>
+	<article class="prose" set:html={body ? await marked.parse(body) : '<p>Missing prompt.</p>'} />
+</Base>
+
+<style>
+	.prose { max-width: 44rem; margin-top: 2rem; }
+	.prose :global(h2), .prose :global(h3), .prose :global(h4) {
+		font-family: var(--serif); font-weight: 400; font-variant: small-caps;
+		letter-spacing: 0.04em; color: var(--oxblood); margin: 2rem 0 0.6rem;
+	}
+	.prose :global(p), .prose :global(li) { line-height: 1.6; }
+	.prose :global(pre) {
+		background: var(--sand); padding: 1rem 1.1rem; border-radius: 3px;
+		overflow-x: auto; font-size: 0.82rem; line-height: 1.5;
+	}
+	.prose :global(code) { font-family: var(--sans); font-size: 0.85em; }
+	.prose :global(pre code) { font-family: ui-monospace, 'Geist Mono', monospace; }
+	.prose :global(:not(pre) > code) {
+		background: var(--sand); padding: 0.1em 0.35em; border-radius: 3px; color: var(--oxblood);
+	}
+</style>

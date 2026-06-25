@@ -1,0 +1,88 @@
+---
+import { getCollection } from 'astro:content';
+import { marked } from 'marked';
+import Dhammacakka from './Dhammacakka.astro';
+
+// Build a slug -> { tooltip, html } map from the definitions collection.
+// Bodies are rendered to HTML at build time so the dialog is pure static data.
+const defs = await getCollection('definitions');
+const data: Record<string, { tooltip: string; html: string }> = {};
+for (const entry of defs) {
+  data[entry.id] = {
+    tooltip: entry.data.tooltip ?? '',
+    html: await marked.parse(entry.body ?? ''),
+  };
+}
+---
+<dialog id="term-dialog" class="term-dialog" aria-labelledby="term-dialog-title">
+  <div class="term-dialog__head">
+    <Dhammacakka size={22} class="term-dialog__mark" />
+    <h2 id="term-dialog-title" class="term-dialog__title"></h2>
+    <form method="dialog"><button class="term-dialog__close" aria-label="Close">×</button></form>
+  </div>
+  <div id="term-dialog-body" class="term-dialog__body"></div>
+</dialog>
+
+<script type="application/json" id="term-defs" set:html={JSON.stringify(data)} />
+
+<style>
+  .term-dialog {
+    width: min(38rem, calc(100vw - 2rem));
+    border: 1px solid var(--sand);
+    border-top: 3px solid var(--oxblood);
+    border-radius: 3px;
+    padding: 0;
+    color: var(--ink);
+    background: var(--parchment);
+    box-shadow: 0 24px 60px -20px rgba(42, 32, 24, 0.45);
+  }
+  .term-dialog::backdrop { background: rgba(42, 32, 24, 0.4); backdrop-filter: blur(1.5px); }
+  .term-dialog__head {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 1.1rem 1.4rem 0.5rem;
+  }
+  .term-dialog__mark { color: var(--oxblood); flex: none; }
+  .term-dialog__title {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    color: var(--oxblood); margin: 0; font-size: 1.5rem; flex: 1;
+  }
+  .term-dialog__close {
+    font-family: var(--sans); font-size: 1.4rem; line-height: 1;
+    border: 0; background: none; cursor: pointer; color: var(--muted); padding: 0.2rem 0.4rem;
+  }
+  .term-dialog__close:hover { color: var(--oxblood); }
+  .term-dialog__body { padding: 0 1.4rem 1.5rem; max-width: 34rem; }
+  .term-dialog__body :global(:first-child) { margin-top: 0; }
+  .term-dialog__body :global(p) { margin: 0 0 0.8rem; }
+</style>
+
+<script>
+  const dialog = document.getElementById('term-dialog') as HTMLDialogElement;
+  const titleEl = document.getElementById('term-dialog-title')!;
+  const bodyEl = document.getElementById('term-dialog-body')!;
+  const defs = JSON.parse(document.getElementById('term-defs')!.textContent || '{}');
+
+  function wire(root: ParentNode) {
+    root.querySelectorAll<HTMLElement>('.pali-term').forEach((el) => {
+      if (el.dataset.wired) return;
+      const slug = el.dataset.term!;
+      const def = defs[slug];
+      if (!def) return;
+      el.dataset.wired = '1';
+      if (def.tooltip && !el.title) el.title = def.tooltip;
+      el.setAttribute('role', 'button');
+      el.tabIndex = 0;
+      const open = () => { titleEl.textContent = slug; bodyEl.innerHTML = def.html; dialog.showModal(); };
+      el.addEventListener('click', open);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      });
+    });
+  }
+
+  wire(document);
+  // Re-wire English panes that HTMX swaps in on version/model switch.
+  document.body.addEventListener('htmx:afterSwap', (e) => wire((e as any).target));
+  // Click on the backdrop closes the dialog.
+  dialog?.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+</script>

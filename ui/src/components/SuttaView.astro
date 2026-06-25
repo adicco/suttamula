@@ -1,0 +1,167 @@
+---
+import { getCollection } from 'astro:content';
+import { getCombos, getSegments, modelToSlug } from '../lib/db';
+import { renderEnglishWithTerms } from '../lib/terms';
+
+interface Props { suttaId: string; version: string; model: string; urlVersion: string; }
+const { suttaId, version, model, urlVersion } = Astro.props;
+
+const defs = await getCollection('definitions');
+const slugs = new Set(defs.map((d) => d.id));
+
+const segments = getSegments(suttaId, version, model).map((s) => ({
+  no: s.seg_id.split(':')[1] ?? '',
+  pali: s.pali ?? '',
+  englishHtml: s.english ? renderEnglishWithTerms(s.english, slugs) : '',
+}));
+
+const combos = getCombos(suttaId);
+const versions = [...new Set(combos.map((c) => c.version))];
+const models = [...new Set(combos.filter((c) => c.version === version).map((c) => c.model))];
+
+const href = (v: string, m: string) => `/sutta/${suttaId}/${v}/${modelToSlug(m)}`;
+const swap = {
+  'hx-select': '.sutta-doc',
+  'hx-target': '.sutta-doc',
+  'hx-swap': 'outerHTML',
+  'hx-push-url': 'true',
+};
+---
+<div class="sutta-doc">
+  <div class="toolbar">
+    <div class="tabs">
+      <span class="tabs__label">Prompt</span>
+      {versions.map((v) => (
+        <a class:list={['tab', { 'tab--active': v === version }]} href={href(v, model)} hx-get={href(v, model)} {...swap}>{v}</a>
+      ))}
+      <a class="tab tab--prompt" href={`/prompts/${version}`}>view prompt&nbsp;↗</a>
+    </div>
+    <div class="tabs">
+      <span class="tabs__label">Model</span>
+      {models.map((m) => (
+        <a class:list={['tab', { 'tab--active': m === model }]} href={href(urlVersion, m)} hx-get={href(urlVersion, m)} {...swap}>{m}</a>
+      ))}
+    </div>
+    <button class="layout-toggle" type="button" data-layout-toggle>
+      <span class="layout-toggle__opt" data-opt="columns">Columns</span>
+      <span class="layout-toggle__opt" data-opt="lines">Line&#8209;by&#8209;line</span>
+    </button>
+  </div>
+
+  <div class="sutta" data-layout="columns">
+    <div class="pane-head pane-head--pali eyebrow">Pāli</div>
+    <div class="pane-head pane-head--en eyebrow">English · {version} · {model}</div>
+    {segments.map((s) => (
+      <div class="row">
+        <p class="seg seg--pali"><span class="seg-no">{s.no}</span><span class="seg-text" lang="pi">{s.pali}</span></p>
+        <p class="seg seg--en">
+          <span class="seg-no" aria-hidden="true">{s.no}</span>
+          {s.englishHtml
+            ? <span class="seg-text" set:html={s.englishHtml} />
+            : <span class="seg-text seg-text--empty" aria-hidden="true">·</span>}
+        </p>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 1rem 2rem; align-items: center;
+    padding-bottom: 1rem; margin-bottom: 1.75rem;
+    border-bottom: 1px solid var(--sand); font-size: 0.9rem;
+  }
+  .tabs { display: flex; align-items: baseline; gap: 0.85rem; }
+  .tabs__label {
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.68rem;
+  }
+  .tab {
+    text-decoration: none; color: var(--muted); padding-bottom: 3px;
+    border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab--active { color: var(--oxblood); border-bottom-color: var(--oxblood); }
+  .tab--prompt { color: var(--muted); font-style: italic; font-size: 0.82rem; }
+
+  .layout-toggle {
+    margin-left: auto; display: inline-flex; font-family: var(--sans); font-size: 0.78rem;
+    border: 1px solid var(--sand); border-radius: 999px; overflow: hidden; cursor: pointer;
+    background: var(--parchment); padding: 0;
+  }
+  .layout-toggle__opt { padding: 0.35rem 0.85rem; color: var(--muted); white-space: nowrap; }
+
+  /* Segment grid. Each .row is two cells; alignment is per-segment. */
+  .sutta { display: grid; column-gap: 2.5rem; align-items: start; }
+  .sutta[data-layout='columns'] { grid-template-columns: 1fr 1fr; }
+  .pane-head { margin-bottom: 1rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--sand); }
+  .row { display: contents; }
+
+  .seg { display: flex; gap: 0.85rem; margin: 0 0 0.85rem; }
+  .seg-no {
+    font-family: var(--sans); font-size: 0.68rem; color: var(--muted);
+    padding-top: 0.4rem; min-width: 2rem; text-align: right; user-select: none; flex: none;
+  }
+  .seg-text { flex: 1; }
+  .seg-text--empty { color: var(--sand); }
+  .seg--pali .seg-text { color: var(--ink); }
+
+  /* Columns: left cells (pali) and right cells (english) flow as two columns,
+     each .row spanning both via display:contents. */
+  .sutta[data-layout='columns'] .seg--pali { border-right: 0; }
+  .sutta[data-layout='columns'] .pane-head--pali { padding-right: 2.5rem; }
+
+  /* Line-by-line: single column, Pāli above its English per segment. */
+  .sutta[data-layout='lines'] { grid-template-columns: 1fr; max-width: var(--measure); margin: 0 auto; }
+  .sutta[data-layout='lines'] .pane-head { display: none; }
+  .sutta[data-layout='lines'] .row { display: block; margin-bottom: 1.6rem; }
+  .sutta[data-layout='lines'] .seg--pali { margin-bottom: 0.1rem; }
+  .sutta[data-layout='lines'] .seg--pali .seg-text { font-size: 1.06em; }
+  .sutta[data-layout='lines'] .seg--en .seg-no { visibility: hidden; }
+  .sutta[data-layout='lines'] .seg--en .seg-text { color: #4a3d30; }
+  .sutta[data-layout='lines'] .seg--en .seg-text--empty { display: none; }
+
+  /* toggle active state driven by data-layout on .sutta via sibling? Use JS-set class. */
+  .layout-toggle[data-active='columns'] .layout-toggle__opt[data-opt='columns'],
+  .layout-toggle[data-active='lines'] .layout-toggle__opt[data-opt='lines'] {
+    background: var(--oxblood); color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .sutta[data-layout='columns'] { grid-template-columns: 1fr; }
+    .sutta[data-layout='columns'] .pane-head--pali { padding-right: 0; }
+    .toolbar { gap: 0.75rem 1.25rem; }
+  }
+</style>
+
+<script>
+  const KEY = 'suttamula-layout';
+
+  function currentLayout(): string {
+    const q = new URLSearchParams(location.search).get('view');
+    if (q === 'lines' || q === 'columns') return q;
+    return localStorage.getItem(KEY) || 'columns';
+  }
+
+  function applyLayout(mode: string) {
+    document.querySelectorAll<HTMLElement>('.sutta').forEach((el) => { el.dataset.layout = mode; });
+    document.querySelectorAll<HTMLElement>('[data-layout-toggle]').forEach((el) => { el.dataset.active = mode; });
+  }
+
+  function setLayout(mode: string) {
+    localStorage.setItem(KEY, mode);
+    const url = new URL(location.href);
+    url.searchParams.set('view', mode);
+    history.replaceState({}, '', url);
+    applyLayout(mode);
+  }
+
+  applyLayout(currentLayout());
+
+  // Delegated so it survives HTMX swaps that recreate the button.
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-layout-toggle]');
+    if (!btn) return;
+    setLayout(currentLayout() === 'lines' ? 'columns' : 'lines');
+  });
+  document.body.addEventListener('htmx:afterSwap', () => applyLayout(currentLayout()));
+</script>

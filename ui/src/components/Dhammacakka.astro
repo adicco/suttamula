@@ -1,0 +1,12 @@
+---
+interface Props { size?: number; class?: string; }
+const { size = 24, class: cls = '' } = Astro.props;
+---
+<svg class={cls} width={size} height={size} viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
+	<circle cx="50" cy="50" r="46" />
+	<circle cx="50" cy="50" r="10" />
+	{Array.from({ length: 8 }).map((_, i) => {
+		const a = (i * Math.PI) / 4;
+		return <line x1={50 + 10 * Math.cos(a)} y1={50 + 10 * Math.sin(a)} x2={50 + 46 * Math.cos(a)} y2={50 + 46 * Math.sin(a)} />;
+	})}
+</svg>

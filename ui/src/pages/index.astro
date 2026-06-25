@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import { getNikayas } from '../lib/db';
+const NAMES = { sn: 'The Connected Discourses', mn: 'The Middle Length Discourses', an: 'The Numerical Discourses', ud: 'Inspired Utterances', dn: 'The Long Discourses' };
+const nikayas = getNikayas();
+---
+<Base title="Suttamūla UI">
+	<p class="eyebrow">Early Buddhism first · Public domain</p>
+	<h1 style="font-weight:400;font-size:2.4rem;margin:.3rem 0 1rem">Suttamūla</h1>
+	<p style="max-width:var(--measure);color:var(--ink)">Fresh translations of the Buddhist Pāli Canon, returning to the root meaning of the early texts.</p>
+	<nav class="browse" style="margin-top:2.5rem;display:grid;gap:1px;background:var(--sand);border:1px solid var(--sand)">
+		{nikayas.map((n) => (
+			<a href={`/${n.nikaya}`} style="background:var(--parchment);padding:1.1rem 1.25rem;text-decoration:none;display:flex;justify-content:space-between;align-items:baseline">
+				<span><strong style="color:var(--ink)">{NAMES[n.nikaya] ?? n.nikaya.toUpperCase()}</strong> <span style="color:var(--muted);font-family:var(--sans);font-size:.8rem">· {n.nikaya.toUpperCase()}</span></span>
+				<span style="color:var(--muted);font-family:var(--sans);font-size:.8rem">{n.count} suttas</span>
+			</a>
+		))}
+	</nav>
+</Base>
