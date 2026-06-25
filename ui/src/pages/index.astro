@@ -3,14 +3,35 @@ import Base from '../layouts/Base.astro';
 import SuttaList from '../components/SuttaList.astro';
 import { getNikayas } from '../lib/db';
 
+// Display names. The four main nikāyas are top-level; every other collection is a
+// book of the Khuddaka Nikāya (KN) and nests under it.
 const NAMES: Record<string, string> = {
-  sn: 'The Connected Discourses',
-  mn: 'The Middle Length Discourses',
-  an: 'The Numerical Discourses',
-  ud: 'Inspired Utterances',
   dn: 'The Long Discourses',
+  mn: 'The Middle Length Discourses',
+  sn: 'The Connected Discourses',
+  an: 'The Numerical Discourses',
+  kn: 'The Minor Collection',
+  ud: 'Inspired Utterances',
+  dhp: 'The Dhammapada',
+  iti: 'As It Was Said',
+  snp: 'The Sutta Collection',
+  kp: 'The Short Passages',
+  thag: 'Verses of the Elder Monks',
+  thig: 'Verses of the Elder Nuns',
+  vv: 'Stories of the Heavenly Mansions',
+  pv: 'Stories of the Departed',
 };
-const nikayas = getNikayas();
+const name = (code: string) => NAMES[code] ?? code.toUpperCase();
+
+const MAIN_ORDER = ['dn', 'mn', 'sn', 'an'];
+const present = new Map(getNikayas().map((n) => [n.nikaya, n.count]));
+
+const mains = MAIN_ORDER.filter((c) => present.has(c)).map((c) => ({ code: c, count: present.get(c)! }));
+const knChildren = [...present.keys()]
+  .filter((c) => !MAIN_ORDER.includes(c))
+  .sort()
+  .map((c) => ({ code: c, count: present.get(c)! }));
+const knTotal = knChildren.reduce((a, c) => a + c.count, 0);
 ---
 <Base title="Suttamūla — Pāli Canon Translations">
   <p class="eyebrow">Early Buddhism first · Public domain</p>
@@ -19,18 +40,38 @@ const nikayas = getNikayas();
     of the early texts.</p>
 
   <div class="nikayas">
-    {nikayas.map((n, i) => (
-      <details class="nikaya" open={i === 0}>
+    {mains.map((n) => (
+      <details class="nikaya">
         <summary class="nikaya__summary">
-          <span class="nikaya__name">{NAMES[n.nikaya] ?? n.nikaya.toUpperCase()}</span>
-          <span class="nikaya__abbr">{n.nikaya.toUpperCase()}</span>
+          <span class="nikaya__name">{name(n.code)}</span>
+          <span class="nikaya__abbr">{n.code.toUpperCase()}</span>
           <span class="nikaya__count">{n.count} suttas</span>
         </summary>
-        <div class="nikaya__body">
-          <SuttaList nikaya={n.nikaya} />
-        </div>
+        <div class="nikaya__body"><SuttaList nikaya={n.code} /></div>
       </details>
     ))}
+
+    {knChildren.length > 0 && (
+      <details class="nikaya">
+        <summary class="nikaya__summary">
+          <span class="nikaya__name">{name('kn')}</span>
+          <span class="nikaya__abbr">KN</span>
+          <span class="nikaya__count">{knTotal} suttas</span>
+        </summary>
+        <div class="nikaya__body nikaya__body--kn">
+          {knChildren.map((c) => (
+            <details class="subnikaya">
+              <summary class="nikaya__summary nikaya__summary--sub">
+                <span class="nikaya__name nikaya__name--sub">{name(c.code)}</span>
+                <span class="nikaya__abbr">{c.code.toUpperCase()}</span>
+                <span class="nikaya__count">{c.count} suttas</span>
+              </summary>
+              <div class="nikaya__body"><SuttaList nikaya={c.code} /></div>
+            </details>
+          ))}
+        </div>
+      </details>
+    )}
   </div>
 </Base>
 
@@ -46,10 +87,17 @@ const nikayas = getNikayas();
     content: '›'; font-family: var(--sans); color: var(--muted);
     transition: transform 0.15s; display: inline-block; width: 0.8rem;
   }
-  .nikaya[open] > .nikaya__summary::before { transform: rotate(90deg); }
+  details[open] > .nikaya__summary::before { transform: rotate(90deg); }
   .nikaya__name { font-family: var(--serif); font-size: 1.3rem; color: var(--ink); }
   .nikaya__abbr { font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--muted); }
   .nikaya__count { font-family: var(--sans); font-size: 0.78rem; color: var(--muted); margin-left: auto; }
   .nikaya__summary:hover .nikaya__name { color: var(--oxblood); }
   .nikaya__body { padding: 0 0.25rem 1.25rem 1.4rem; }
+
+  /* Khuddaka sub-books: nested, lighter heading. */
+  .nikaya__body--kn { padding-bottom: 0.5rem; }
+  .subnikaya { border-top: 1px solid var(--sand); }
+  .subnikaya:first-child { border-top: 0; }
+  .nikaya__summary--sub { padding: 0.7rem 0.25rem; }
+  .nikaya__name--sub { font-size: 1.08rem; }
 </style>
