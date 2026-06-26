@@ -113,8 +113,7 @@
         `${escapeHtml(it.meaning)}</div>`).join('')).join('');
     const more = senses.length > TIP_CAP
       ? `<div class="pali-tip__more">+${senses.length - TIP_CAP} more — click to expand</div>` : '';
-    return body + more +
-      `<div class="pali-tip__src"><img class="pali-tip__logo" src="/dpd-logo-48.png" alt="" />Digital Pāli Dictionary</div>`;
+    return body + more;
   }
 
   // The curated tooltip text, if any, is read from TermDialog's inlined defs blob.

@@ -51,11 +51,13 @@
 ### Task 1: Dependencies, constants, and the extraction library (TDD)
 
 **Files:**
+
 - Modify: `package.json` (add deps + scripts)
 - Create: `scripts/lib/extract.mjs`
 - Test: `scripts/lib/extract.test.mjs`
 
 **Interfaces:**
+
 - Produces:
   - `parseTranslationPath(relPath: string): { version, model, nikaya, vagga, suttaId, suttaRel }` — `relPath` is POSIX path under `translation/` (e.g. `0.2/gpt-5.5:medium/an/an1/an1.1-10.json`). `suttaRel` is the path under `<version>/<model>/` minus `.json` (e.g. `an/an1/an1.1-10`).
   - `paliRelFor(suttaRel: string): string` — returns `<suttaRel>_root-pli-ms.json`.
@@ -67,11 +69,14 @@
 - [ ] **Step 1: Add dependencies and scripts**
 
 Run:
+
 ```bash
 cd /home/adicco/Code/suttamula/ui
 npm install better-sqlite3
 ```
+
 Then edit `package.json` `scripts` to:
+
 ```json
   "scripts": {
     "dev": "astro dev",
@@ -86,61 +91,70 @@ Then edit `package.json` `scripts` to:
 - [ ] **Step 2: Write the failing tests**
 
 Create `scripts/lib/extract.test.mjs`:
-```js
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import {
-  parseTranslationPath, paliRelFor, compareVersions, latestVersion,
-  zipSegments, suttaSortKey,
-} from './extract.mjs';
 
-test('parseTranslationPath with vagga', () => {
-  const r = parseTranslationPath('0.2/gpt-5.5:medium/an/an1/an1.1-10.json');
+```js
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  parseTranslationPath,
+  paliRelFor,
+  compareVersions,
+  latestVersion,
+  zipSegments,
+  suttaSortKey,
+} from "./extract.mjs";
+
+test("parseTranslationPath with vagga", () => {
+  const r = parseTranslationPath("0.2/gpt-5.5:medium/an/an1/an1.1-10.json");
   assert.deepEqual(r, {
-    version: '0.2', model: 'gpt-5.5:medium', nikaya: 'an',
-    vagga: 'an1', suttaId: 'an1.1-10', suttaRel: 'an/an1/an1.1-10',
+    version: "0.2",
+    model: "gpt-5.5:medium",
+    nikaya: "an",
+    vagga: "an1",
+    suttaId: "an1.1-10",
+    suttaRel: "an/an1/an1.1-10",
   });
 });
 
-test('parseTranslationPath without vagga', () => {
-  const r = parseTranslationPath('0.1/sonnet/mn/mn9.json');
+test("parseTranslationPath without vagga", () => {
+  const r = parseTranslationPath("0.1/sonnet/mn/mn9.json");
   assert.equal(r.vagga, null);
-  assert.equal(r.suttaId, 'mn9');
-  assert.equal(r.suttaRel, 'mn/mn9');
+  assert.equal(r.suttaId, "mn9");
+  assert.equal(r.suttaRel, "mn/mn9");
 });
 
-test('paliRelFor', () => {
-  assert.equal(paliRelFor('sn/sn12/sn12.1'), 'sn/sn12/sn12.1_root-pli-ms.json');
+test("paliRelFor", () => {
+  assert.equal(paliRelFor("sn/sn12/sn12.1"), "sn/sn12/sn12.1_root-pli-ms.json");
 });
 
-test('compareVersions numeric-aware', () => {
-  assert.ok(compareVersions('0.2', '0.1') > 0);
-  assert.ok(compareVersions('0.10', '0.2') > 0);
+test("compareVersions numeric-aware", () => {
+  assert.ok(compareVersions("0.2", "0.1") > 0);
+  assert.ok(compareVersions("0.10", "0.2") > 0);
 });
 
-test('latestVersion', () => {
-  assert.equal(latestVersion(['0.1', '0.2']), '0.2');
+test("latestVersion", () => {
+  assert.equal(latestVersion(["0.1", "0.2"]), "0.2");
 });
 
-test('zipSegments follows english order and joins pali', () => {
-  const pali = { 'x:1.1': 'P1', 'x:1.2': 'P2' };
-  const en = { 'x:1.1': 'E1', 'x:1.2': 'E2' };
+test("zipSegments follows english order and joins pali", () => {
+  const pali = { "x:1.1": "P1", "x:1.2": "P2" };
+  const en = { "x:1.1": "E1", "x:1.2": "E2" };
   const out = zipSegments(pali, en);
   assert.deepEqual(out, [
-    { seg_id: 'x:1.1', seg_order: 0, pali: 'P1', english: 'E1' },
-    { seg_id: 'x:1.2', seg_order: 1, pali: 'P2', english: 'E2' },
+    { seg_id: "x:1.1", seg_order: 0, pali: "P1", english: "E1" },
+    { seg_id: "x:1.2", seg_order: 1, pali: "P2", english: "E2" },
   ]);
 });
 
-test('zipSegments tolerates missing pali', () => {
-  const out = zipSegments({}, { 'x:1.1': 'E1' });
+test("zipSegments tolerates missing pali", () => {
+  const out = zipSegments({}, { "x:1.1": "E1" });
   assert.equal(out[0].pali, null);
 });
 
-test('suttaSortKey sorts naturally', () => {
-  const ids = ['sn12.10', 'sn12.1', 'sn12.2'];
+test("suttaSortKey sorts naturally", () => {
+  const ids = ["sn12.10", "sn12.1", "sn12.2"];
   ids.sort((a, b) => suttaSortKey(a).localeCompare(suttaSortKey(b)));
-  assert.deepEqual(ids, ['sn12.1', 'sn12.2', 'sn12.10']);
+  assert.deepEqual(ids, ["sn12.1", "sn12.2", "sn12.10"]);
 });
 ```
 
@@ -152,17 +166,18 @@ Expected: FAIL — `Cannot find module './extract.mjs'`.
 - [ ] **Step 4: Implement `extract.mjs`**
 
 Create `scripts/lib/extract.mjs`:
+
 ```js
 // Pure helpers for the DB build. No fs/sqlite here so they stay unit-testable.
 
 export function parseTranslationPath(relPath) {
-  const parts = relPath.split('/');
+  const parts = relPath.split("/");
   const [version, model, ...rest] = parts;
   const nikaya = rest[0];
   const file = rest[rest.length - 1];
-  const suttaId = file.replace(/\.json$/, '');
+  const suttaId = file.replace(/\.json$/, "");
   const vagga = rest.length === 3 ? rest[1] : null;
-  const suttaRel = rest.join('/').replace(/\.json$/, '');
+  const suttaRel = rest.join("/").replace(/\.json$/, "");
   return { version, model, nikaya, vagga, suttaId, suttaRel };
 }
 
@@ -171,11 +186,12 @@ export function paliRelFor(suttaRel) {
 }
 
 function versionTuple(v) {
-  return v.split('.').map((n) => parseInt(n, 10));
+  return v.split(".").map((n) => parseInt(n, 10));
 }
 
 export function compareVersions(a, b) {
-  const ta = versionTuple(a), tb = versionTuple(b);
+  const ta = versionTuple(a),
+    tb = versionTuple(b);
   const len = Math.max(ta.length, tb.length);
   for (let i = 0; i < len; i++) {
     const d = (ta[i] || 0) - (tb[i] || 0);
@@ -198,10 +214,10 @@ export function zipSegments(paliMap, enMap) {
 }
 
 export function suttaSortKey(suttaId) {
-  const pad = (s) => s.replace(/\d+/g, (n) => n.padStart(10, '0'));
+  const pad = (s) => s.replace(/\d+/g, (n) => n.padStart(10, "0"));
   const m = suttaId.match(/^([a-z]+)(.*)$/);
   const nikaya = m ? m[1] : suttaId;
-  const rest = m ? m[2] : '';
+  const rest = m ? m[2] : "";
   return `${nikaya}|${pad(rest)}`;
 }
 ```
@@ -223,16 +239,19 @@ git commit -m "feat: extraction helpers + deps for sutta DB build"
 ### Task 2: SQLite build script
 
 **Files:**
+
 - Create: `scripts/build-db.mjs`
 - Modify: `.gitignore` (ignore the DB)
 
 **Interfaces:**
+
 - Consumes: all of `extract.mjs`.
 - Produces: `data/suttamula.db` with tables `suttas`, `translations`, `segments`, `versions`, `prompts` (schema per spec §1). Running the script is idempotent (drops + recreates).
 
 - [ ] **Step 1: Ignore the generated DB**
 
 Append to `.gitignore`:
+
 ```
 # generated build-time database
 data/
@@ -241,41 +260,60 @@ data/
 - [ ] **Step 2: Write the build script**
 
 Create `scripts/build-db.mjs`:
+
 ```js
-import Database from 'better-sqlite3';
-import { readFileSync, readdirSync, statSync, mkdirSync, existsSync } from 'node:fs';
-import { join, relative, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import Database from "better-sqlite3";
 import {
-  parseTranslationPath, paliRelFor, compareVersions, latestVersion,
-  zipSegments, suttaSortKey,
-} from './lib/extract.mjs';
+  readFileSync,
+  readdirSync,
+  statSync,
+  mkdirSync,
+  existsSync,
+} from "node:fs";
+import { join, relative, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  parseTranslationPath,
+  paliRelFor,
+  compareVersions,
+  latestVersion,
+  zipSegments,
+  suttaSortKey,
+} from "./lib/extract.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const UI_ROOT = join(HERE, '..');
-const TRANSLATION_ROOT = join(UI_ROOT, '..', 'translation');
-const PALI_ROOT = join(UI_ROOT, '..', 'bilara-data', 'root', 'pli', 'ms', 'sutta');
-const PROMPTS_ROOT = join(UI_ROOT, '..', 'prompts');
-const DB_DIR = join(UI_ROOT, 'data');
-const DB_PATH = join(DB_DIR, 'suttamula.db');
+const UI_ROOT = join(HERE, "..");
+const TRANSLATION_ROOT = join(UI_ROOT, "..", "translation");
+const PALI_ROOT = join(
+  UI_ROOT,
+  "..",
+  "bilara-data",
+  "root",
+  "pli",
+  "ms",
+  "sutta",
+);
+const PROMPTS_ROOT = join(UI_ROOT, "..", "prompts");
+const DB_DIR = join(UI_ROOT, "data");
+const DB_PATH = join(DB_DIR, "suttamula.db");
 
 function walkJson(dir) {
   const out = [];
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) out.push(...walkJson(full));
-    else if (entry.endsWith('.json')) out.push(full);
+    else if (entry.endsWith(".json")) out.push(full);
   }
   return out;
 }
 
 function readJson(path) {
-  return JSON.parse(readFileSync(path, 'utf8'));
+  return JSON.parse(readFileSync(path, "utf8"));
 }
 
 mkdirSync(DB_DIR, { recursive: true });
 const db = new Database(DB_PATH);
-db.pragma('journal_mode = WAL');
+db.pragma("journal_mode = WAL");
 
 db.exec(`
   DROP TABLE IF EXISTS segments;
@@ -302,18 +340,21 @@ db.exec(`
 
 const insSutta = db.prepare(
   `INSERT OR REPLACE INTO suttas (id, nikaya, vagga, title_pali, title_en, order_key)
-   VALUES (@id, @nikaya, @vagga, @title_pali, @title_en, @order_key)`);
+   VALUES (@id, @nikaya, @vagga, @title_pali, @title_en, @order_key)`,
+);
 const insTrans = db.prepare(
-  `INSERT OR REPLACE INTO translations (sutta_id, version, model) VALUES (?, ?, ?)`);
+  `INSERT OR REPLACE INTO translations (sutta_id, version, model) VALUES (?, ?, ?)`,
+);
 const insSeg = db.prepare(
   `INSERT INTO segments (sutta_id, version, model, seg_id, seg_order, pali, english)
-   VALUES (@sutta_id, @version, @model, @seg_id, @seg_order, @pali, @english)`);
+   VALUES (@sutta_id, @version, @model, @seg_id, @seg_order, @pali, @english)`,
+);
 
 const versionsSeen = new Set();
 
 const run = db.transaction(() => {
   for (const file of walkJson(TRANSLATION_ROOT)) {
-    const rel = relative(TRANSLATION_ROOT, file).split('\\').join('/');
+    const rel = relative(TRANSLATION_ROOT, file).split("\\").join("/");
     const meta = parseTranslationPath(rel);
     versionsSeen.add(meta.version);
 
@@ -326,32 +367,47 @@ const run = db.transaction(() => {
     const titleEn = enMap[`${meta.suttaId}:0.3`]?.trim() ?? null;
 
     insSutta.run({
-      id: meta.suttaId, nikaya: meta.nikaya, vagga: meta.vagga,
-      title_pali: titlePali, title_en: titleEn, order_key: suttaSortKey(meta.suttaId),
+      id: meta.suttaId,
+      nikaya: meta.nikaya,
+      vagga: meta.vagga,
+      title_pali: titlePali,
+      title_en: titleEn,
+      order_key: suttaSortKey(meta.suttaId),
     });
     insTrans.run(meta.suttaId, meta.version, meta.model);
     for (const s of segs) {
-      insSeg.run({ ...s, sutta_id: meta.suttaId, version: meta.version, model: meta.model });
+      insSeg.run({
+        ...s,
+        sutta_id: meta.suttaId,
+        version: meta.version,
+        model: meta.model,
+      });
     }
   }
 
   const latest = latestVersion([...versionsSeen]);
-  const insVer = db.prepare(`INSERT OR REPLACE INTO versions (version, is_latest) VALUES (?, ?)`);
+  const insVer = db.prepare(
+    `INSERT OR REPLACE INTO versions (version, is_latest) VALUES (?, ?)`,
+  );
   for (const v of versionsSeen) insVer.run(v, v === latest ? 1 : 0);
 
   if (existsSync(PROMPTS_ROOT)) {
-    const insPrompt = db.prepare(`INSERT OR REPLACE INTO prompts (version, body_md) VALUES (?, ?)`);
+    const insPrompt = db.prepare(
+      `INSERT OR REPLACE INTO prompts (version, body_md) VALUES (?, ?)`,
+    );
     for (const entry of readdirSync(PROMPTS_ROOT)) {
-      if (!entry.endsWith('.md')) continue;
-      const version = entry.replace(/\.md$/, '');
-      insPrompt.run(version, readFileSync(join(PROMPTS_ROOT, entry), 'utf8'));
+      if (!entry.endsWith(".md")) continue;
+      const version = entry.replace(/\.md$/, "");
+      insPrompt.run(version, readFileSync(join(PROMPTS_ROOT, entry), "utf8"));
     }
   }
 });
 
 run();
-const n = db.prepare('SELECT COUNT(*) c FROM translations').get().c;
-console.log(`Built ${DB_PATH}: ${n} translation combinations, versions ${[...versionsSeen].join(', ')}`);
+const n = db.prepare("SELECT COUNT(*) c FROM translations").get().c;
+console.log(
+  `Built ${DB_PATH}: ${n} translation combinations, versions ${[...versionsSeen].join(", ")}`,
+);
 db.close();
 ```
 
@@ -363,9 +419,11 @@ Expected: prints `Built .../data/suttamula.db: <N> translation combinations, ver
 - [ ] **Step 4: Sanity-check the DB**
 
 Run:
+
 ```bash
 node -e "const D=require('better-sqlite3');const db=new D('data/suttamula.db');console.log(db.prepare('SELECT * FROM versions').all());console.log(db.prepare('SELECT sutta_id,version,model FROM translations LIMIT 3').all());console.log(db.prepare(\"SELECT seg_id,pali,english FROM segments WHERE sutta_id='sn12.1' AND version='0.2' ORDER BY seg_order LIMIT 2\").all());"
 ```
+
 Expected: versions array with one `is_latest:1`; translation rows; segments with both Pāli and English populated.
 
 - [ ] **Step 5: Commit**
@@ -380,9 +438,11 @@ git commit -m "feat: build-time SQLite DB from translations, pali, prompts"
 ### Task 3: Build-time DB query module
 
 **Files:**
+
 - Create: `src/lib/db.ts`
 
 **Interfaces:**
+
 - Consumes: `data/suttamula.db`.
 - Produces (all synchronous, build-time):
   - `getNikayas(): Array<{ nikaya: string, count: number }>`
@@ -401,96 +461,137 @@ git commit -m "feat: build-time SQLite DB from translations, pali, prompts"
 - [ ] **Step 1: Implement the module**
 
 Create `src/lib/db.ts`:
+
 ```ts
-import Database from 'better-sqlite3';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import Database from "better-sqlite3";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const DB_PATH = join(HERE, '..', '..', 'data', 'suttamula.db');
+const DB_PATH = join(HERE, "..", "..", "data", "suttamula.db");
 
 const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
 
 export function getNikayas() {
-  return db.prepare(
-    `SELECT nikaya, COUNT(*) AS count FROM suttas GROUP BY nikaya ORDER BY nikaya`
-  ).all() as Array<{ nikaya: string; count: number }>;
+  return db
+    .prepare(
+      `SELECT nikaya, COUNT(*) AS count FROM suttas GROUP BY nikaya ORDER BY nikaya`,
+    )
+    .all() as Array<{ nikaya: string; count: number }>;
 }
 
 export function getSuttasByNikaya(nikaya: string) {
-  return db.prepare(
-    `SELECT id, vagga, title_pali, title_en FROM suttas
-     WHERE nikaya = ? ORDER BY order_key`
-  ).all(nikaya) as Array<{ id: string; vagga: string | null; title_pali: string; title_en: string }>;
+  return db
+    .prepare(
+      `SELECT id, vagga, title_pali, title_en FROM suttas
+     WHERE nikaya = ? ORDER BY order_key`,
+    )
+    .all(nikaya) as Array<{
+    id: string;
+    vagga: string | null;
+    title_pali: string;
+    title_en: string;
+  }>;
 }
 
 export function getCombos(suttaId: string) {
-  return db.prepare(
-    `SELECT version, model FROM translations WHERE sutta_id = ?
-     ORDER BY version DESC, model`
-  ).all(suttaId) as Array<{ version: string; model: string }>;
+  return db
+    .prepare(
+      `SELECT version, model FROM translations WHERE sutta_id = ?
+     ORDER BY version DESC, model`,
+    )
+    .all(suttaId) as Array<{ version: string; model: string }>;
 }
 
 export function getAllCombos() {
-  return db.prepare(
-    `SELECT sutta_id AS suttaId, version, model FROM translations`
-  ).all() as Array<{ suttaId: string; version: string; model: string }>;
+  return db
+    .prepare(`SELECT sutta_id AS suttaId, version, model FROM translations`)
+    .all() as Array<{ suttaId: string; version: string; model: string }>;
 }
 
 export function getSegments(suttaId: string, version: string, model: string) {
-  return db.prepare(
-    `SELECT seg_id, seg_order, pali, english FROM segments
-     WHERE sutta_id = ? AND version = ? AND model = ? ORDER BY seg_order`
-  ).all(suttaId, version, model) as Array<{ seg_id: string; seg_order: number; pali: string | null; english: string }>;
+  return db
+    .prepare(
+      `SELECT seg_id, seg_order, pali, english FROM segments
+     WHERE sutta_id = ? AND version = ? AND model = ? ORDER BY seg_order`,
+    )
+    .all(suttaId, version, model) as Array<{
+    seg_id: string;
+    seg_order: number;
+    pali: string | null;
+    english: string;
+  }>;
 }
 
 export function getVersions() {
-  return db.prepare(`SELECT version, is_latest FROM versions ORDER BY version`)
+  return db
+    .prepare(`SELECT version, is_latest FROM versions ORDER BY version`)
     .all() as Array<{ version: string; is_latest: number }>;
 }
 
 export function getLatestVersion(): string {
-  const row = db.prepare(`SELECT version FROM versions WHERE is_latest = 1`).get() as { version: string } | undefined;
-  if (!row) throw new Error('No latest version in DB');
+  const row = db
+    .prepare(`SELECT version FROM versions WHERE is_latest = 1`)
+    .get() as { version: string } | undefined;
+  if (!row) throw new Error("No latest version in DB");
   return row.version;
 }
 
 export function resolveVersion(v: string): string {
-  return v === 'latest' ? getLatestVersion() : v;
+  return v === "latest" ? getLatestVersion() : v;
 }
 
 export function getDefaultModel(suttaId: string, version: string): string {
-  const row = db.prepare(
-    `SELECT model FROM translations WHERE sutta_id = ? AND version = ? ORDER BY model LIMIT 1`
-  ).get(suttaId, version) as { model: string } | undefined;
+  const row = db
+    .prepare(
+      `SELECT model FROM translations WHERE sutta_id = ? AND version = ? ORDER BY model LIMIT 1`,
+    )
+    .get(suttaId, version) as { model: string } | undefined;
   if (!row) throw new Error(`No model for ${suttaId} ${version}`);
   return row.model;
 }
 
 export function getSutta(suttaId: string) {
-  return db.prepare(
-    `SELECT id, nikaya, vagga, title_pali, title_en FROM suttas WHERE id = ?`
-  ).get(suttaId) as { id: string; nikaya: string; vagga: string | null; title_pali: string; title_en: string } | undefined;
+  return db
+    .prepare(
+      `SELECT id, nikaya, vagga, title_pali, title_en FROM suttas WHERE id = ?`,
+    )
+    .get(suttaId) as
+    | {
+        id: string;
+        nikaya: string;
+        vagga: string | null;
+        title_pali: string;
+        title_en: string;
+      }
+    | undefined;
 }
 
 export function getPrompt(version: string): string | null {
-  const row = db.prepare(`SELECT body_md FROM prompts WHERE version = ?`).get(version) as { body_md: string } | undefined;
+  const row = db
+    .prepare(`SELECT body_md FROM prompts WHERE version = ?`)
+    .get(version) as { body_md: string } | undefined;
   return row?.body_md ?? null;
 }
 
 export function getPromptVersions(): string[] {
-  return (db.prepare(`SELECT version FROM prompts ORDER BY version`).all() as Array<{ version: string }>)
-    .map((r) => r.version);
+  return (
+    db.prepare(`SELECT version FROM prompts ORDER BY version`).all() as Array<{
+      version: string;
+    }>
+  ).map((r) => r.version);
 }
 ```
 
 - [ ] **Step 2: Verify it loads and queries**
 
 Run:
+
 ```bash
 node --input-type=module -e "import('./src/lib/db.ts').catch(()=>{});" 2>/dev/null; \
 npx tsx -e "import {getNikayas,getLatestVersion,getAllCombos} from './src/lib/db.ts'; console.log(getNikayas()); console.log('latest', getLatestVersion()); console.log('combos', getAllCombos().length);"
 ```
+
 Note: if `tsx` is unavailable, this module is exercised by the Astro build in later tasks; skip the standalone check and rely on Task 6's build.
 Expected (if run): nikāya counts, a latest version string, and a combo count > 0.
 
@@ -506,10 +607,12 @@ git commit -m "feat: build-time DB query module"
 ### Task 4: Pāli-term rendering (TDD)
 
 **Files:**
+
 - Create: `src/lib/terms.ts`
 - Test: `src/lib/terms.test.mjs`
 
 **Interfaces:**
+
 - Produces:
   - `slugify(term: string): string` — lowercase, trim, spaces→`-`, keep diacritics, strip surrounding punctuation.
   - `renderEnglishWithTerms(text: string, knownSlugs: Set<string>): string` — returns HTML. Replaces `[*X*]` with `[<span class="pali-term" data-term="<slug>">X</span>]` and standalone `*X*` with `<span class="pali-term" ...>X</span>` (or `<em>X</em>` if no slug matches). A term matches if `slugify(X)` is in `knownSlugs`, or `slugify(X without trailing s)` is. Non-matching `*X*` renders as `<em>X</em>`; non-matching `[*X*]` renders as `[<em>X</em>]`. HTML-escapes all literal text.
@@ -517,38 +620,51 @@ git commit -m "feat: build-time DB query module"
 - [ ] **Step 1: Write the failing tests**
 
 Create `src/lib/terms.test.mjs`:
+
 ```js
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { slugify, renderEnglishWithTerms } from './terms.ts';
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { slugify, renderEnglishWithTerms } from "./terms.ts";
 
-test('slugify lowercases, keeps diacritics, hyphenates spaces', () => {
-  assert.equal(slugify('Paṭiccasamuppāda'), 'paṭiccasamuppāda');
-  assert.equal(slugify('yoniso manasikāra'), 'yoniso-manasikāra');
+test("slugify lowercases, keeps diacritics, hyphenates spaces", () => {
+  assert.equal(slugify("Paṭiccasamuppāda"), "paṭiccasamuppāda");
+  assert.equal(slugify("yoniso manasikāra"), "yoniso-manasikāra");
 });
 
-test('known standalone term becomes interactive span', () => {
-  const html = renderEnglishWithTerms('I teach *dhamma* now', new Set(['dhamma']));
-  assert.match(html, /<span class="pali-term" data-term="dhamma">dhamma<\/span>/);
+test("known standalone term becomes interactive span", () => {
+  const html = renderEnglishWithTerms(
+    "I teach *dhamma* now",
+    new Set(["dhamma"]),
+  );
+  assert.match(
+    html,
+    /<span class="pali-term" data-term="dhamma">dhamma<\/span>/,
+  );
 });
 
-test('plural matches singular slug', () => {
-  const html = renderEnglishWithTerms('the *bhikkhus* sat', new Set(['bhikkhu']));
+test("plural matches singular slug", () => {
+  const html = renderEnglishWithTerms(
+    "the *bhikkhus* sat",
+    new Set(["bhikkhu"]),
+  );
   assert.match(html, /data-term="bhikkhu">bhikkhus<\/span>/);
 });
 
-test('unknown term renders as plain em', () => {
-  const html = renderEnglishWithTerms('a *nibbāna* here', new Set());
-  assert.equal(html, 'a <em>nibbāna</em> here');
+test("unknown term renders as plain em", () => {
+  const html = renderEnglishWithTerms("a *nibbāna* here", new Set());
+  assert.equal(html, "a <em>nibbāna</em> here");
 });
 
-test('bracketed term keeps brackets, span inside', () => {
-  const html = renderEnglishWithTerms('mind [*citta*]', new Set(['citta']));
-  assert.match(html, /\[<span class="pali-term" data-term="citta">citta<\/span>\]/);
+test("bracketed term keeps brackets, span inside", () => {
+  const html = renderEnglishWithTerms("mind [*citta*]", new Set(["citta"]));
+  assert.match(
+    html,
+    /\[<span class="pali-term" data-term="citta">citta<\/span>\]/,
+  );
 });
 
-test('escapes html in surrounding text', () => {
-  const html = renderEnglishWithTerms('a < b *dhamma*', new Set(['dhamma']));
+test("escapes html in surrounding text", () => {
+  const html = renderEnglishWithTerms("a < b *dhamma*", new Set(["dhamma"]));
   assert.match(html, /a &lt; b /);
 });
 ```
@@ -561,21 +677,24 @@ Expected: FAIL — module/exports not found.
 - [ ] **Step 3: Implement `terms.ts`**
 
 Create `src/lib/terms.ts`:
+
 ```ts
 export function slugify(term: string): string {
-  return term.trim().toLowerCase()
-    .replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '')
-    .replace(/\s+/g, '-');
+  return term
+    .trim()
+    .toLowerCase()
+    .replace(/^[^\p{L}]+|[^\p{L}]+$/gu, "")
+    .replace(/\s+/g, "-");
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function matchSlug(inner: string, known: Set<string>): string | null {
   const slug = slugify(inner);
   if (known.has(slug)) return slug;
-  const singular = slug.replace(/s$/, '');
+  const singular = slug.replace(/s$/, "");
   if (singular !== slug && known.has(singular)) return singular;
   return null;
 }
@@ -591,8 +710,11 @@ function termSpan(inner: string, known: Set<string>): string {
 // Matches [*inner*] (group 1) or *inner* (group 2). Inner has no '*'.
 const TOKEN = /\[\*([^*]+)\*\]|\*([^*]+)\*/g;
 
-export function renderEnglishWithTerms(text: string, knownSlugs: Set<string>): string {
-  let out = '';
+export function renderEnglishWithTerms(
+  text: string,
+  knownSlugs: Set<string>,
+): string {
+  let out = "";
   let last = 0;
   for (const m of text.matchAll(TOKEN)) {
     out += escapeHtml(text.slice(last, m.index));
@@ -622,21 +744,24 @@ git commit -m "feat: pali-term HTML rendering with definition gating"
 ### Task 5: Definitions content collection + starter file
 
 **Files:**
+
 - Create: `src/content.config.ts`
 - Create: `src/content/definitions/dhamma.md`
 
 **Interfaces:**
+
 - Produces: a `definitions` collection with `tooltip?: string` frontmatter; body is markdown. Consumed via `getCollection('definitions')` → each entry's `id` is the slug, `data.tooltip`, and rendered body.
 
 - [ ] **Step 1: Define the collection**
 
 Create `src/content.config.ts`:
+
 ```ts
-import { defineCollection, z } from 'astro:content';
-import { glob } from 'astro/loaders';
+import { defineCollection, z } from "astro:content";
+import { glob } from "astro/loaders";
 
 const definitions = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/definitions' }),
+  loader: glob({ pattern: "**/*.md", base: "./src/content/definitions" }),
   schema: z.object({
     tooltip: z.string().optional(),
   }),
@@ -648,6 +773,7 @@ export const collections = { definitions };
 - [ ] **Step 2: Create a starter definition**
 
 Create `src/content/definitions/dhamma.md`:
+
 ```markdown
 ---
 tooltip: "Left untranslated — the Buddha's teaching, and the nature of things; 'truth' and 'phenomenon' at once."
@@ -677,6 +803,7 @@ git commit -m "feat: definitions content collection + dhamma starter"
 ### Task 6: Base layout, design tokens, fonts, HTMX
 
 **Files:**
+
 - Create: `public/fonts/` (vendored woff2 — Coelacanth + Geist)
 - Create: `public/htmx.min.js`
 - Create: `src/styles/global.css`
@@ -685,62 +812,79 @@ git commit -m "feat: definitions content collection + dhamma starter"
 - Modify: `astro.config.mjs`
 
 **Interfaces:**
+
 - Produces: `Base.astro` accepting props `{ title: string }` and a default slot; loads fonts, tokens, HTMX. `Dhammacakka.astro` accepting `{ size?: number, class?: string }` rendering an inline SVG wheel in `currentColor`.
 
 - [ ] **Step 1: Vendor the fonts**
 
 Download Coelacanth (woff2) from https://gitlab.com/Fuzzypeg/coelacanth and Geist (woff2) from the Geist font release. Place at:
+
 - `public/fonts/Coelacanth.woff2` (regular), `public/fonts/Coelacanth-Italic.woff2`
 - `public/fonts/Geist.woff2` (variable or regular weight)
 
 Run to confirm:
+
 ```bash
 ls -la public/fonts/
 ```
+
 Expected: the woff2 files present. If Coelacanth ships only OTF/TTF, convert to woff2 with `npx fontmin` or `woff2_compress`; document the source filename used.
 
 - [ ] **Step 2: Vendor HTMX**
 
 Run:
+
 ```bash
 curl -L -o public/htmx.min.js https://unpkg.com/htmx.org@2/dist/htmx.min.js
 ls -la public/htmx.min.js
 ```
+
 Expected: a non-empty JS file.
 
 - [ ] **Step 3: Write the global stylesheet**
 
 Create `src/styles/global.css`:
+
 ```css
 @font-face {
-  font-family: 'Coelacanth';
-  src: url('/fonts/Coelacanth.woff2') format('woff2');
-  font-weight: 400; font-style: normal; font-display: swap;
+  font-family: "Coelacanth";
+  src: url("/fonts/Coelacanth.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 @font-face {
-  font-family: 'Coelacanth';
-  src: url('/fonts/Coelacanth-Italic.woff2') format('woff2');
-  font-weight: 400; font-style: italic; font-display: swap;
+  font-family: "Coelacanth";
+  src: url("/fonts/Coelacanth-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
 }
 @font-face {
-  font-family: 'Geist';
-  src: url('/fonts/Geist.woff2') format('woff2');
-  font-weight: 100 900; font-style: normal; font-display: swap;
+  font-family: "Geist";
+  src: url("/fonts/Geist.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
 }
 
 :root {
   --oxblood: #752803;
-  --parchment: #FBF8F2;
-  --sand: #EFE7D9;
-  --ink: #2A2018;
-  --muted: #8A7E6E;
-  --serif: 'Coelacanth', Georgia, serif;
-  --sans: 'Geist', system-ui, sans-serif;
+  --parchment: #fbf8f2;
+  --sand: #efe7d9;
+  --ink: #2a2018;
+  --muted: #8a7e6e;
+  --serif: "Coelacanth", Georgia, serif;
+  --sans: "Geist", system-ui, sans-serif;
   --measure: 34rem;
 }
 
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+* {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
 body {
   margin: 0;
   background: var(--parchment);
@@ -750,44 +894,81 @@ body {
   line-height: 1.6;
 }
 
-a { color: var(--oxblood); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a {
+  color: var(--oxblood);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
 
 .site-header {
   font-family: var(--sans);
   border-bottom: 1px solid var(--sand);
   padding: 1rem 1.5rem;
-  display: flex; align-items: center; gap: .75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
-.site-header a { text-decoration: none; color: var(--ink); }
-.site-header .wordmark { font-family: var(--serif); font-size: 1.4rem; letter-spacing: .01em; }
+.site-header a {
+  text-decoration: none;
+  color: var(--ink);
+}
+.site-header .wordmark {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  letter-spacing: 0.01em;
+}
 
 .eyebrow {
-  font-family: var(--serif); font-variant: small-caps;
-  letter-spacing: .12em; color: var(--oxblood); font-size: .95rem;
+  font-family: var(--serif);
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  color: var(--oxblood);
+  font-size: 0.95rem;
 }
 
-main { max-width: 64rem; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 6rem;
+}
 
 /* UI chrome uses sans */
-.tabs, .meta, .seg-no, nav.browse, .toolbar { font-family: var(--sans); }
+.tabs,
+.meta,
+.seg-no,
+nav.browse,
+.toolbar {
+  font-family: var(--sans);
+}
 
 /* Pāli terms */
 .pali-term {
-  font-style: italic; cursor: pointer;
+  font-style: italic;
+  cursor: pointer;
   border-bottom: 1px dotted var(--oxblood);
 }
-.pali-term:hover, .pali-term:focus { color: var(--oxblood); }
+.pali-term:hover,
+.pali-term:focus {
+  color: var(--oxblood);
+}
 
-:focus-visible { outline: 2px solid var(--oxblood); outline-offset: 2px; }
+:focus-visible {
+  outline: 2px solid var(--oxblood);
+  outline-offset: 2px;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 ```
 
 - [ ] **Step 4: Create the wheel motif**
 
 Create `src/components/Dhammacakka.astro`:
+
 ```astro
 ---
 interface Props { size?: number; class?: string; }
@@ -808,6 +989,7 @@ const { size = 24, class: cls = '' } = Astro.props;
 - [ ] **Step 5: Create the base layout**
 
 Create `src/layouts/Base.astro`:
+
 ```astro
 ---
 import '../styles/global.css';
@@ -842,16 +1024,17 @@ const { title } = Astro.props;
 - [ ] **Step 6: Confirm static output config**
 
 Edit `astro.config.mjs`:
+
 ```js
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
   // Static output (default). Root-domain deploy, no base path.
   vite: {
     // better-sqlite3 is build-time only; keep it external from client bundles.
-    ssr: { external: ['better-sqlite3'] },
+    ssr: { external: ["better-sqlite3"] },
   },
 });
 ```
@@ -873,15 +1056,18 @@ git commit -m "feat: base layout, design tokens, fonts, htmx, wheel motif"
 ### Task 7: Term dialog component
 
 **Files:**
+
 - Create: `src/components/TermDialog.astro`
 
 **Interfaces:**
+
 - Consumes: `getCollection('definitions')`, `renderEnglishWithTerms` slugs (the dialog reads `data-term`).
 - Produces: a single `<dialog id="term-dialog">` plus inline JSON of all definitions (slug→{tooltip, html}) and a client script that, on click of any `.pali-term`, opens the dialog populated with that term's rendered markdown; on hover sets `title`. Used once per sutta page.
 
 - [ ] **Step 1: Implement the component**
 
 Create `src/components/TermDialog.astro`:
+
 ```astro
 ---
 import { getCollection, render } from 'astro:content';
@@ -960,16 +1146,19 @@ git commit -m "feat: shared pali-term dialog with htmx re-wiring"
 ### Task 8: Sutta view component + page (HTMX switching + layout toggle)
 
 **Files:**
+
 - Create: `src/components/SuttaView.astro`
 - Create: `src/pages/sutta/[id]/[version]/[model].astro`
 
 **Interfaces:**
+
 - Consumes: `db.ts` queries, `renderEnglishWithTerms`, `getCollection('definitions')`, `TermDialog`, `Base`.
 - Produces: a page at `/sutta/[id]/[version]/[model]` for every real combo plus `latest` aliases. The English column markup is wrapped in `<div class="english-pane">…</div>` so HTMX `hx-select=".english-pane"` works.
 
 - [ ] **Step 1: Build the SuttaView component**
 
 Create `src/components/SuttaView.astro`:
+
 ```astro
 ---
 import { getCollection } from 'astro:content';
@@ -1092,6 +1281,7 @@ Note on line-by-line interleaving: because columns are separate DOM panes, true 
 - [ ] **Step 1b (optional refinement): true per-segment interleave**
 
 If stacked blocks are not acceptable, change `SuttaView` `lines` rendering to emit a single interleaved list. Replace the two panes' loop with a shared loop guarded by layout — simplest correct approach: render a third hidden block used only in `lines` mode:
+
 ```astro
 <div class="interleaved">
   {segments.map((s) => (
@@ -1102,11 +1292,13 @@ If stacked blocks are not acceptable, change `SuttaView` `lines` rendering to em
   ))}
 </div>
 ```
+
 and toggle `.sutta` vs `.interleaved` visibility by layout in CSS/JS. Decide during implementation; default is the simpler stacked mode. (This duplicates English markup, so keep the canonical `.english-pane` as the HTMX swap target and rebuild `.interleaved` client-side from it, OR accept that HTMX swaps only update columns mode and a full nav updates both. For v1, **prefer the simpler stacked `lines` mode and skip 1b.**)
 
 - [ ] **Step 2: Build the dynamic page**
 
 Create `src/pages/sutta/[id]/[version]/[model].astro`:
+
 ```astro
 ---
 import Base from '../../../../layouts/Base.astro';
@@ -1143,27 +1335,33 @@ const title = sutta?.title_en?.trim() || sutta?.title_pali?.trim() || id!;
 - [ ] **Step 3: Build the site and verify pages generate**
 
 Run:
+
 ```bash
 cd /home/adicco/Code/suttamula/ui && npm run build:db && npx astro build 2>&1 | tail -15
 ls dist/sutta/sn12.1/latest/ 2>/dev/null
 ```
+
 Expected: build succeeds; `dist/sutta/sn12.1/latest/<model>/index.html` exists (model dir is URL-encoded, e.g. `gpt-5.5%3Amedium`).
 
 - [ ] **Step 4: Spot-check rendered HTML**
 
 Run:
+
 ```bash
 grep -o 'class="pali-term"[^>]*>[^<]*' dist/sutta/sn12.1/0.2/*/index.html | head
 grep -c 'english-pane' dist/sutta/sn12.1/0.2/*/index.html
 ```
+
 Expected: at least one `pali-term` span (e.g. `dhamma`); exactly one `english-pane` container.
 
 - [ ] **Step 5: Visual verification with Playwright**
 
 Start preview in background, then drive the browser:
+
 ```bash
 npx astro preview --port 4321 &
 ```
+
 Use the Playwright MCP tools: navigate to `http://localhost:4321/sutta/sn12.1/latest/gpt-5.5%3Amedium`, take a screenshot. Verify: two columns (Pāli left, English right), oxblood active tabs, segment numbers, a dotted-underline `dhamma` term. Click a model/prompt tab → English pane swaps, URL updates. Click `dhamma` → dialog opens. Toggle line-by-line → layout changes and persists on reload.
 
 - [ ] **Step 6: Commit**
@@ -1178,16 +1376,19 @@ git commit -m "feat: sutta view with htmx version/model switching and layout tog
 ### Task 9: Homepage + nikāya browse
 
 **Files:**
+
 - Create: `src/pages/index.astro`
 - Create: `src/pages/[nikaya].astro`
 
 **Interfaces:**
+
 - Consumes: `getNikayas`, `getSuttasByNikaya`, `getCombos`, `getDefaultModel`, `getLatestVersion`, `resolveVersion`.
 - Produces: `/` and `/[nikaya]`. Sutta links point to `/sutta/<id>/latest/<defaultModel>` where `defaultModel` is `getDefaultModel(id, latest)`.
 
 - [ ] **Step 1: Homepage**
 
 Create `src/pages/index.astro`:
+
 ```astro
 ---
 import Base from '../layouts/Base.astro';
@@ -1199,7 +1400,6 @@ const NAMES: Record<string, string> = {
 const nikayas = getNikayas();
 ---
 <Base title="Pāli Canon Translations">
-  <p class="eyebrow">Early Buddhism First · Public Domain</p>
   <h1 style="font-weight:400;font-size:2.4rem;margin:.3rem 0 1rem">Suttamūla</h1>
   <p style="max-width:var(--measure);color:var(--ink)">
     Fresh translations of the Buddhist Pāli Canon, returning to the root meaning of the
@@ -1220,6 +1420,7 @@ const nikayas = getNikayas();
 - [ ] **Step 2: Nikāya browse page**
 
 Create `src/pages/[nikaya].astro`:
+
 ```astro
 ---
 import Base from '../layouts/Base.astro';
@@ -1265,10 +1466,12 @@ const linkFor = (id: string) => `/sutta/${id}/latest/${encodeURIComponent(getDef
 - [ ] **Step 3: Build and verify**
 
 Run:
+
 ```bash
 npx astro build 2>&1 | tail -5
 ls dist/index.html dist/sn/index.html
 ```
+
 Expected: both files exist; `dist/sn/index.html` lists suttas grouped by vagga with links into `/sutta/.../latest/...`.
 
 - [ ] **Step 4: Commit**
@@ -1283,10 +1486,12 @@ git commit -m "feat: homepage and nikaya browse"
 ### Task 10: Prompt transparency pages
 
 **Files:**
+
 - Create: `src/pages/prompts/index.astro`
 - Create: `src/pages/prompts/[version].astro`
 
 **Interfaces:**
+
 - Consumes: `getPromptVersions`, `getPrompt`, `getVersions`. Renders prompt markdown to HTML (use `marked`).
 
 - [ ] **Step 1: Add the markdown renderer**
@@ -1296,6 +1501,7 @@ Run: `npm install marked`
 - [ ] **Step 2: Prompts index**
 
 Create `src/pages/prompts/index.astro`:
+
 ```astro
 ---
 import Base from '../../layouts/Base.astro';
@@ -1319,6 +1525,7 @@ const latest = getVersions().find((v) => v.is_latest)?.version;
 - [ ] **Step 3: Single prompt page**
 
 Create `src/pages/prompts/[version].astro`:
+
 ```astro
 ---
 import Base from '../../layouts/Base.astro';
@@ -1348,11 +1555,13 @@ const html = marked.parse(md);
 - [ ] **Step 4: Build and verify**
 
 Run:
+
 ```bash
 npx astro build 2>&1 | tail -5
 ls dist/prompts/index.html dist/prompts/0.2/index.html
 grep -c 'Pali to leave untranslated' dist/prompts/0.2/index.html
 ```
+
 Expected: files exist; the prompt content is rendered (grep count ≥ 1).
 
 - [ ] **Step 5: Commit**
@@ -1367,15 +1576,18 @@ git commit -m "feat: prompt transparency pages"
 ### Task 11: Terms index page
 
 **Files:**
+
 - Create: `src/pages/terms.astro`
 
 **Interfaces:**
+
 - Consumes: `getCollection('definitions')`, `render`, `TermDialog`.
 - Produces: `/terms` listing every definition; each term opens the same shared dialog on click.
 
 - [ ] **Step 1: Build the page**
 
 Create `src/pages/terms.astro`:
+
 ```astro
 ---
 import Base from '../layouts/Base.astro';
@@ -1403,10 +1615,12 @@ const defs = (await getCollection('definitions')).sort((a, b) => a.id.localeComp
 - [ ] **Step 2: Build and verify**
 
 Run:
+
 ```bash
 npx astro build 2>&1 | tail -5
 grep -o 'data-term="[^"]*"' dist/terms/index.html | head
 ```
+
 Expected: page builds; lists `dhamma` (and any other definitions).
 
 - [ ] **Step 3: Visual check (Playwright)**
@@ -1425,6 +1639,7 @@ git commit -m "feat: pali terms index page"
 ### Task 12: Full build, README, final verification
 
 **Files:**
+
 - Modify: `README.md`
 
 **Interfaces:** none new.
@@ -1432,9 +1647,11 @@ git commit -m "feat: pali terms index page"
 - [ ] **Step 1: Clean full build from scratch**
 
 Run:
+
 ```bash
 cd /home/adicco/Code/suttamula/ui && rm -rf dist data && npm run build 2>&1 | tail -20
 ```
+
 Expected: `build:db` runs, then `astro build` prerenders all pages with zero errors.
 
 - [ ] **Step 2: Run the unit test suite**
@@ -1445,7 +1662,8 @@ Expected: all tests in `scripts/lib/extract.test.mjs` and `src/lib/terms.test.mj
 - [ ] **Step 3: Update the app README**
 
 Replace `README.md` with project-run instructions:
-```markdown
+
+````markdown
 # Suttamūla UI
 
 Static Astro site serving Suttamūla's Pāli↔English translations.
@@ -1456,6 +1674,7 @@ Static Astro site serving Suttamūla's Pāli↔English translations.
 npm install
 npm run build        # builds the SQLite DB from ../translation + ../bilara-data + ../prompts, then astro build
 ```
+````
 
 Output is in `dist/` — a fully static site (no runtime database; SQLite is build-time only).
 
@@ -1476,20 +1695,22 @@ npm test
 
 Add `src/content/definitions/<term>.md` with optional `tooltip:` frontmatter.
 Only terms with a definition file become interactive in the text.
-```
+
+````
 
 - [ ] **Step 4: Commit**
 
 ```bash
 git add README.md
 git commit -m "docs: ui build/run instructions"
-```
+````
 
 ---
 
 ## Self-Review
 
 **Spec coverage:**
+
 - §1 data pipeline + prompts table → Tasks 1, 2. ✓
 - §2 routing (`/`, `/[nikaya]`, `/sutta/[id]/[version]/[model]`, `latest` alias, `/prompts`, `/terms`) → Tasks 8, 9, 10, 11. ✓
 - §3 two-pane + HTMX swap + view-prompt + layout toggle → Task 8. ✓

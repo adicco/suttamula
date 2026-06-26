@@ -10,17 +10,20 @@ const { title } = Astro.props;
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>{title} · Suttamūla</title>
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<script src="/htmx.min.js" defer></script>
 	</head>
 	<body>
 		<header class="site-header">
 			<a href="/" style="display:flex;align-items:center;gap:.6rem;color:var(--oxblood)">
-				<Dhammacakka size={28} />
+        <img src="/favicon-64.png" style="width:64px; height: 64px;" />
 				<span class="wordmark" style="color:var(--ink)">Suttamūla</span>
 			</a>
-			<nav class="meta" style="margin-left:auto;display:flex;gap:1.25rem">
-				<a href="/terms">Terms</a>
-				<a href="/prompts">Prompts</a>
+      <nav class="meta" style="margin-left:auto;display:flex;gap:1.25rem;font-size: 14px;">
+				<a href="/terms">Definitions</a>
+				<a href="/prompts">AI Prompts</a>
 			</nav>
 		</header>
 		<main><slot /></main>
