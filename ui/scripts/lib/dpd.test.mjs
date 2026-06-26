@@ -6,6 +6,8 @@ test('stripLemmaNumber drops a trailing sense number', () => {
   assert.equal(stripLemmaNumber('dukkha 3'), 'dukkha');
   assert.equal(stripLemmaNumber('dhamma'), 'dhamma');
   assert.equal(stripLemmaNumber('saṅkhāra 12'), 'saṅkhāra');
+  assert.equal(stripLemmaNumber('dhamma 1.01'), 'dhamma');
+  assert.equal(stripLemmaNumber('dhamma 2.1'), 'dhamma');
 });
 
 test('dedupeSenses maps, drops empty meanings, and dedupes', () => {
