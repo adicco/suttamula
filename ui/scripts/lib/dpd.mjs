@@ -1,5 +1,5 @@
 export function stripLemmaNumber(lemma) {
-  return String(lemma).replace(/\s+\d+$/, '').trim();
+  return String(lemma).replace(/\s+\d+(\.\d+)*\.?$/, '').trim();
 }
 
 export function dedupeSenses(rows) {

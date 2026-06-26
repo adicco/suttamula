@@ -8,6 +8,8 @@ import {
 	zipSegments,
 	suttaSortKey,
 } from './lib/extract.mjs';
+import { tokenizePali } from '../src/lib/pali.mjs';
+import { dedupeSenses, stripLemmaNumber } from './lib/dpd.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_ROOT = join(HERE, '..');
@@ -17,6 +19,8 @@ const PALI_ROOT = join(UI_ROOT, '..', '..', 'bilara-data', 'root', 'pli', 'ms', 
 const PROMPTS_ROOT = join(UI_ROOT, '..', 'prompts');
 const DB_DIR = join(UI_ROOT, 'data');
 const DB_PATH = join(DB_DIR, 'suttamula.db');
+const DPD_PATH = join(DB_DIR, 'dpd.db');
+const DEFINITIONS_DIR = join(UI_ROOT, 'src', 'content', 'definitions');
 
 function walkJson(dir) {
 	const out = [];
@@ -63,6 +67,7 @@ mkdirSync(DB_DIR, { recursive: true });
 const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 db.exec(`
+  DROP TABLE IF EXISTS dpd;
   DROP TABLE IF EXISTS segments;
   DROP TABLE IF EXISTS translations;
   DROP TABLE IF EXISTS suttas;
@@ -83,6 +88,7 @@ db.exec(`
   CREATE INDEX idx_seg ON segments (sutta_id, version, model, seg_order);
   CREATE TABLE versions (version TEXT PRIMARY KEY, is_latest INTEGER);
   CREATE TABLE prompts (version TEXT PRIMARY KEY, body_md TEXT);
+  CREATE TABLE dpd (form TEXT PRIMARY KEY, senses TEXT NOT NULL, term TEXT);
 `);
 
 const insSutta = db.prepare(
@@ -101,6 +107,7 @@ const insPrompt = db.prepare(`INSERT OR REPLACE INTO prompts (version, body_md) 
 
 const versionsSeen = new Set();
 const suttasSeen = new Map();
+const formsSeen = new Set();
 const paliIndex = buildPaliIndex(PALI_ROOT);
 
 if (existsSync(TRANSLATION_ROOT)) {
@@ -115,6 +122,10 @@ if (existsSync(TRANSLATION_ROOT)) {
 		// Raw segment ids from the source maps are already consistent between
 		// Pāli and English; keep them verbatim so the join in zipSegments holds.
 		const segs = zipSegments(paliMap, enMap);
+
+		for (const s of segs) {
+			if (s.pali) for (const form of tokenizePali(s.pali)) formsSeen.add(form);
+		}
 
 		const key = meta.suttaId;
 		if (!suttasSeen.has(key)) {
@@ -145,6 +156,47 @@ if (existsSync(PROMPTS_ROOT)) {
 		const version = entry.replace(/\.md$/, '');
 		insPrompt.run(version, readFileSync(join(PROMPTS_ROOT, entry), 'utf8'));
 	}
+}
+
+// --- DPD dictionary lookup table -------------------------------------------
+// data/dpd.db is a build-time input only; we bake the relevant subset into
+// suttamula.db so the 2.1 GB source never reaches the Astro build or runtime.
+if (existsSync(DPD_PATH) && formsSeen.size) {
+	const defSlugs = new Set(
+		existsSync(DEFINITIONS_DIR)
+			? readdirSync(DEFINITIONS_DIR).filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, ''))
+			: []
+	);
+
+	const dpd = new Database(DPD_PATH, { readonly: true, fileMustExist: true });
+	const lookupStmt = dpd.prepare('SELECT headwords FROM lookup WHERE lookup_key = ?');
+	// id list is interpolated (integers from JSON) — safe, and avoids variadic binding.
+	const headwordsFor = (ids) =>
+		dpd.prepare(`SELECT lemma_1, pos, meaning_1 FROM dpd_headwords WHERE id IN (${ids.join(',')})`).all();
+
+	const insDpd = db.prepare('INSERT OR REPLACE INTO dpd (form, senses, term) VALUES (?, ?, ?)');
+	let matched = 0;
+	const writeAll = db.transaction(() => {
+		for (const form of formsSeen) {
+			const row = lookupStmt.get(form);
+			if (!row || !row.headwords) continue;
+			let ids;
+			try { ids = JSON.parse(row.headwords); } catch { continue; }
+			if (!Array.isArray(ids) || !ids.length) continue;
+			const onlyInts = ids.filter((n) => Number.isInteger(n));
+			if (!onlyInts.length) continue;
+			const senses = dedupeSenses(headwordsFor(onlyInts));
+			if (!senses.length) continue;
+			const term = senses.map((s) => stripLemmaNumber(s.lemma)).find((l) => defSlugs.has(l)) ?? null;
+			insDpd.run(form, JSON.stringify(senses), term);
+			matched++;
+		}
+	});
+	writeAll();
+	dpd.close();
+	console.log(`DPD: ${matched}/${formsSeen.size} forms matched.`);
+} else {
+	console.log('DPD: data/dpd.db not found or no forms — skipping dpd table.');
 }
 
 db.close();
