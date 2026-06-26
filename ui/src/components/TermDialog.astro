@@ -54,6 +54,13 @@ for (const entry of defs) {
   .term-dialog__body { padding: 0 1.4rem 1.5rem; max-width: 34rem; }
   .term-dialog__body :global(:first-child) { margin-top: 0; }
   .term-dialog__body :global(p) { margin: 0 0 0.8rem; }
+  .term-dialog__body :global(.dpd-section) { margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid var(--sand); }
+  .term-dialog__body :global(.dpd-head) { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+  .term-dialog__body :global(.dpd-logo) { width: 18px; height: 18px; }
+  .term-dialog__body :global(.dpd-list) { margin: 0; padding-left: 1.1rem; }
+  .term-dialog__body :global(.dpd-list li) { margin: 0 0 0.35rem; }
+  .term-dialog__body :global(.dpd-lemma) { font-weight: 600; }
+  .term-dialog__body :global(.dpd-pos) { color: var(--muted); font-style: italic; margin: 0 0.3rem; }
 </style>
 
 <script>
@@ -61,6 +68,30 @@ for (const entry of defs) {
   const titleEl = document.getElementById('term-dialog-title')!;
   const bodyEl = document.getElementById('term-dialog-body')!;
   const defs = JSON.parse(document.getElementById('term-defs')!.textContent || '{}');
+
+  function escapeDpd(s: string) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderDpdSection(senses: Array<{ lemma: string; pos: string; meaning: string }>) {
+    const items = senses.map((s) =>
+      `<li><span class="dpd-lemma">${escapeDpd(s.lemma)}</span>` +
+      (s.pos ? `<span class="dpd-pos">${escapeDpd(s.pos)}</span>` : ' ') +
+      `${escapeDpd(s.meaning)}</li>`).join('');
+    return `<div class="dpd-section"><div class="dpd-head">` +
+      `<img class="dpd-logo" src="/dpd-logo-48.png" alt="" /><span>Digital Pāli Dictionary</span></div>` +
+      `<ul class="dpd-list">${items}</ul></div>`;
+  }
+
+  document.addEventListener('suttamula:open-dialog', (e) => {
+    const { title, senses, term } = (e as CustomEvent).detail as {
+      title: string; senses: Array<{ lemma: string; pos: string; meaning: string }>; term: string | null;
+    };
+    titleEl.textContent = title;
+    const curated = term && defs[term] ? defs[term].html : '';
+    bodyEl.innerHTML = curated + renderDpdSection(senses);
+    dialog.showModal();
+  });
 
   function wire(root: ParentNode) {
     root.querySelectorAll<HTMLElement>('.pali-term').forEach((el) => {
