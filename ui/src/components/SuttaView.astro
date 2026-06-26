@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import { getCombos, getSegments, modelToSlug } from '../lib/db';
 import { renderEnglishWithTerms } from '../lib/terms';
+import PaliLookup from './PaliLookup.astro';
 
 interface Props { suttaId: string; version: string; model: string; urlVersion: string; }
 const { suttaId, version, model, urlVersion } = Astro.props;
@@ -27,7 +28,7 @@ const swap = {
   'hx-push-url': 'true',
 };
 ---
-<div class="sutta-doc">
+<div class="sutta-doc" data-sutta-id={suttaId} data-dpd-src={`/dpd/${suttaId}.json`}>
   <div class="toolbar">
     <div class="tabs">
       <span class="tabs__label">Prompt</span>
@@ -63,6 +64,7 @@ const swap = {
       </div>
     ))}
   </div>
+  <PaliLookup />
 </div>
 
 <style>

@@ -1,0 +1,185 @@
+---
+// Runtime DPD lookups for the Pāli column. No per-word markup: the word under
+// the pointer is resolved via the caret API, then looked up in the per-sutta
+// JSON fetched on demand. A click opens the shared term dialog (TermDialog).
+---
+<div id="pali-tip" class="pali-tip" hidden></div>
+<div id="pali-hl" class="pali-hl" hidden></div>
+
+<style>
+  .pali-tip {
+    position: fixed; z-index: 50; max-width: 22rem;
+    background: var(--parchment); color: var(--ink);
+    border: 1px solid var(--sand); border-top: 3px solid var(--oxblood);
+    border-radius: 3px; padding: 0.6rem 0.75rem;
+    box-shadow: 0 16px 40px -16px rgba(42, 32, 24, 0.45);
+    font-size: 0.85rem; line-height: 1.35; pointer-events: none;
+  }
+  .pali-tip__def { margin: 0 0 0.5rem; font-style: italic; color: #4a3d30; }
+  .pali-tip__dpd { display: flex; gap: 0.45rem; }
+  .pali-tip__logo { width: 16px; height: 16px; flex: none; margin-top: 0.15rem; }
+  .pali-tip__senses { margin: 0; padding: 0; list-style: none; }
+  .pali-tip__senses li { margin: 0 0 0.2rem; }
+  .pali-tip__lemma { font-weight: 600; }
+  .pali-tip__pos { color: var(--muted); font-style: italic; margin: 0 0.3rem; }
+  .pali-tip__more { color: var(--muted); font-size: 0.78rem; }
+  .pali-hl {
+    position: fixed; z-index: 49; pointer-events: none;
+    border-bottom: 2px solid var(--oxblood); background: rgba(117, 40, 3, 0.07);
+  }
+</style>
+
+<script>
+  import { PALI_LETTERS, wordAt } from '../lib/pali.mjs';
+
+  type Sense = { lemma: string; pos: string; meaning: string };
+  type Entry = { senses: Sense[]; term: string | null };
+  type Data = Record<string, Entry>;
+
+  const TIP_CAP = 6;
+  const cache = new Map<string, Promise<Data>>();
+  const tip = document.getElementById('pali-tip') as HTMLElement;
+  const hl = document.getElementById('pali-hl') as HTMLElement;
+
+  function load(src: string): Promise<Data> {
+    if (!cache.has(src)) {
+      cache.set(src, fetch(src).then((r) => (r.ok ? r.json() : {})).catch(() => ({})) as Promise<Data>);
+    }
+    return cache.get(src)!;
+  }
+
+  // Cross-browser caret hit-test -> { node, offset } for a text node, else null.
+  function caretAt(x: number, y: number): { node: Text; offset: number } | null {
+    const d = document as any;
+    if (d.caretPositionFromPoint) {
+      const p = d.caretPositionFromPoint(x, y);
+      if (p && p.offsetNode && p.offsetNode.nodeType === 3) return { node: p.offsetNode, offset: p.offset };
+    } else if (d.caretRangeFromPoint) {
+      const r = d.caretRangeFromPoint(x, y);
+      if (r && r.startContainer && r.startContainer.nodeType === 3) return { node: r.startContainer, offset: r.startOffset };
+    }
+    return null;
+  }
+
+  // Expand a text-node offset to the Pāli word range, for positioning.
+  function wordRange(node: Text, offset: number): Range | null {
+    const text = node.data;
+    const LETTER = new RegExp(`[${PALI_LETTERS}]`, 'u');
+    let start = offset, end = offset;
+    while (start > 0 && LETTER.test(text[start - 1])) start--;
+    while (end < text.length && LETTER.test(text[end])) end++;
+    if (start === end) return null;
+    const range = document.createRange();
+    range.setStart(node, start);
+    range.setEnd(node, end);
+    return range;
+  }
+
+  function inPaliPane(node: Node | null): HTMLElement | null {
+    const el = (node && (node.nodeType === 3 ? node.parentElement : (node as HTMLElement))) || null;
+    return el ? el.closest('.seg--pali') as HTMLElement | null : null;
+  }
+
+  function escapeHtml(s: string) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function dpdHtml(senses: Sense[]) {
+    const items = senses.slice(0, TIP_CAP).map((s) =>
+      `<li><span class="pali-tip__lemma">${escapeHtml(s.lemma)}</span>` +
+      (s.pos ? `<span class="pali-tip__pos">${escapeHtml(s.pos)}</span>` : ' ') +
+      `${escapeHtml(s.meaning)}</li>`).join('');
+    const more = senses.length > TIP_CAP ? `<div class="pali-tip__more">+${senses.length - TIP_CAP} more — click for all</div>` : '';
+    return `<div class="pali-tip__dpd"><img class="pali-tip__logo" src="/dpd-logo-48.png" alt="DPD" />` +
+      `<ul class="pali-tip__senses">${items}</ul></div>${more}`;
+  }
+
+  // The curated tooltip text, if any, is read from TermDialog's inlined defs blob.
+  function curatedTooltip(term: string | null): string {
+    if (!term) return '';
+    try {
+      const defs = JSON.parse(document.getElementById('term-defs')?.textContent || '{}');
+      return defs[term]?.tooltip || '';
+    } catch { return ''; }
+  }
+
+  function showTip(entry: Entry, rect: DOMRect) {
+    const def = curatedTooltip(entry.term);
+    tip.innerHTML = (def ? `<p class="pali-tip__def">${escapeHtml(def)}</p>` : '') + dpdHtml(entry.senses);
+    tip.hidden = false;
+    // Position below the word, clamped to viewport.
+    const tr = tip.getBoundingClientRect();
+    let left = Math.min(rect.left, window.innerWidth - tr.width - 8);
+    let top = rect.bottom + 6;
+    if (top + tr.height > window.innerHeight - 8) top = rect.top - tr.height - 6;
+    tip.style.left = `${Math.max(8, left)}px`;
+    tip.style.top = `${Math.max(8, top)}px`;
+  }
+
+  function showHighlight(rect: DOMRect) {
+    hl.hidden = false;
+    hl.style.left = `${rect.left}px`;
+    hl.style.top = `${rect.top}px`;
+    hl.style.width = `${rect.width}px`;
+    hl.style.height = `${rect.height}px`;
+  }
+
+  function hide() { tip.hidden = true; hl.hidden = true; }
+
+  let raf = 0;
+  let lastWord = '';
+
+  async function onMove(e: MouseEvent) {
+    const pane = e.target instanceof Node ? inPaliPane(e.target) : null;
+    if (!pane) { hide(); lastWord = ''; return; }
+    const root = pane.closest('[data-dpd-src]') as HTMLElement | null;
+    if (!root) { hide(); return; }
+    const hit = caretAt(e.clientX, e.clientY);
+    if (!hit) { hide(); lastWord = ''; return; }
+    const word = wordAt(hit.node.data, hit.offset);
+    if (!word) { hide(); lastWord = ''; return; }
+    if (word === lastWord && !tip.hidden) return;
+    lastWord = word;
+    const data = await load(root.dataset.dpdSrc!);
+    const entry = data[word];
+    if (!entry) { hide(); return; }
+    const range = wordRange(hit.node, hit.offset);
+    if (!range) { hide(); return; }
+    const rect = range.getBoundingClientRect();
+    showHighlight(rect);
+    showTip(entry, rect);
+  }
+
+  function arm() {
+    const root = document.querySelector('[data-dpd-src]') as HTMLElement | null;
+    if (root) load(root.dataset.dpdSrc!); // idle prefetch
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; onMove(e); });
+  });
+  document.addEventListener('scroll', hide, true);
+
+  document.addEventListener('click', async (e) => {
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) return; // don't hijack text selection
+    const pane = e.target instanceof Node ? inPaliPane(e.target) : null;
+    if (!pane) return;
+    const root = pane.closest('[data-dpd-src]') as HTMLElement | null;
+    if (!root) return;
+    const hit = caretAt((e as MouseEvent).clientX, (e as MouseEvent).clientY);
+    if (!hit) return;
+    const word = wordAt(hit.node.data, hit.offset);
+    if (!word) return;
+    const data = await load(root.dataset.dpdSrc!);
+    const entry = data[word];
+    if (!entry) return;
+    document.dispatchEvent(new CustomEvent('suttamula:open-dialog', {
+      detail: { title: entry.term || entry.senses[0]?.lemma || word, senses: entry.senses, term: entry.term },
+    }));
+  });
+
+  arm();
+  document.body.addEventListener('htmx:afterSwap', arm); // re-prefetch after version/model swap
+</script>
