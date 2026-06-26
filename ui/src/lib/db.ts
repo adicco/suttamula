@@ -38,3 +38,17 @@ export function getDefaultCombo(suttaId) { const row = db.prepare(`SELECT versio
 export function getSutta(suttaId) { return db.prepare(`SELECT id, nikaya, vagga, title_pali, title_en FROM suttas WHERE id = ?`).get(suttaId); }
 export function getPrompt(version) { const row = db.prepare(`SELECT body_md FROM prompts WHERE version = ?`).get(version); return row?.body_md ?? null; }
 export function getPromptVersions() { return db.prepare(`SELECT version FROM prompts ORDER BY version`).all().map((r) => r.version); }
+
+export function getAllSuttaIds(): string[] {
+  return (db.prepare(`SELECT id FROM suttas`).all() as Array<{ id: string }>).map((r) => r.id);
+}
+
+export function getDistinctPaliForSutta(suttaId: string): string[] {
+  return (db.prepare(`SELECT DISTINCT pali FROM segments WHERE sutta_id = ? AND pali IS NOT NULL AND pali <> ''`).all(suttaId) as Array<{ pali: string }>).map((r) => r.pali);
+}
+
+export function getDpdRows(forms: string[]): Array<{ form: string; senses: string; term: string | null }> {
+  if (!forms.length) return [];
+  const placeholders = forms.map(() => '?').join(',');
+  return db.prepare(`SELECT form, senses, term FROM dpd WHERE form IN (${placeholders})`).all(...forms) as any;
+}
