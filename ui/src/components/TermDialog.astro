@@ -54,16 +54,19 @@ for (const entry of defs) {
   .term-dialog__body { padding: 0 1.4rem 1.5rem; max-width: 34rem; }
   .term-dialog__body :global(:first-child) { margin-top: 0; }
   .term-dialog__body :global(p) { margin: 0 0 0.8rem; }
-  .term-dialog__body :global(.dpd-section) { margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid var(--sand); }
-  .term-dialog__body :global(.dpd-head) { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
-  .term-dialog__body :global(.dpd-logo) { width: 18px; height: 18px; }
-  .term-dialog__body :global(.dpd-list) { margin: 0; padding-left: 1.1rem; }
-  .term-dialog__body :global(.dpd-list li) { margin: 0 0 0.35rem; }
-  .term-dialog__body :global(.dpd-lemma) { font-weight: 600; }
-  .term-dialog__body :global(.dpd-pos) { color: var(--muted); font-style: italic; margin: 0 0.3rem; }
+  .term-dialog__body :global(.dpd-section) { margin-top: 1.1rem; padding-top: 0.85rem; border-top: 1px solid var(--sand); }
+  .term-dialog__body :global(.dpd-head) { display: flex; align-items: center; gap: 0.45rem; color: var(--muted); font-family: var(--sans); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 0.7rem; }
+  .term-dialog__body :global(.dpd-logo) { width: 14px; height: 14px; display: block; }
+  .term-dialog__body :global(.dpd-entry) { margin-bottom: 0.7rem; }
+  .term-dialog__body :global(.dpd-entry:last-child) { margin-bottom: 0; }
+  .term-dialog__body :global(.dpd-lemma) { font-family: var(--serif); font-weight: 600; color: var(--oxblood); font-size: 1.05rem; margin-bottom: 0.1rem; }
+  .term-dialog__body :global(.dpd-sense) { line-height: 1.5; margin: 0.05rem 0; }
+  .term-dialog__body :global(.dpd-pos) { font-family: var(--sans); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-right: 0.45rem; }
 </style>
 
 <script>
+  import { groupSenses } from '../lib/dpd-render.mjs';
+
   const dialog = document.getElementById('term-dialog') as HTMLDialogElement;
   const titleEl = document.getElementById('term-dialog-title')!;
   const bodyEl = document.getElementById('term-dialog-body')!;
@@ -74,13 +77,16 @@ for (const entry of defs) {
   }
 
   function renderDpdSection(senses: Array<{ lemma: string; pos: string; meaning: string }>) {
-    const items = senses.map((s) =>
-      `<li><span class="dpd-lemma">${escapeDpd(s.lemma)}</span>` +
-      (s.pos ? `<span class="dpd-pos">${escapeDpd(s.pos)}</span>` : ' ') +
-      `${escapeDpd(s.meaning)}</li>`).join('');
+    const body = groupSenses(senses).map((g: { lemma: string; items: Array<{ pos: string; meaning: string }> }) =>
+      `<div class="dpd-entry"><div class="dpd-lemma">${escapeDpd(g.lemma)}</div>` +
+      g.items.map((it) =>
+        `<div class="dpd-sense">` +
+        (it.pos ? `<span class="dpd-pos">${escapeDpd(it.pos)}</span>` : '') +
+        `${escapeDpd(it.meaning)}</div>`).join('') +
+      `</div>`).join('');
     return `<div class="dpd-section"><div class="dpd-head">` +
       `<img class="dpd-logo" src="/dpd-logo-48.png" alt="" /><span>Digital Pāli Dictionary</span></div>` +
-      `<ul class="dpd-list">${items}</ul></div>`;
+      `${body}</div>`;
   }
 
   document.addEventListener('suttamula:open-dialog', (e) => {

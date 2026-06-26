@@ -8,21 +8,39 @@
 
 <style>
   .pali-tip {
-    position: fixed; z-index: 50; max-width: 22rem;
+    position: fixed; z-index: 50; max-width: 24rem;
     background: var(--parchment); color: var(--ink);
-    border: 1px solid var(--sand); border-top: 3px solid var(--oxblood);
-    border-radius: 3px; padding: 0.6rem 0.75rem;
-    box-shadow: 0 16px 40px -16px rgba(42, 32, 24, 0.45);
-    font-size: 0.85rem; line-height: 1.35; pointer-events: none;
+    border: 1px solid var(--sand); border-top: 2px solid var(--oxblood);
+    border-radius: 4px; padding: 0.85rem 1rem 0.7rem;
+    box-shadow: 0 18px 44px -18px rgba(42, 32, 24, 0.5);
+    font-size: 0.95rem; line-height: 1.5; pointer-events: none;
   }
-  .pali-tip__def { margin: 0 0 0.5rem; font-style: italic; color: #4a3d30; }
-  .pali-tip__dpd { display: flex; gap: 0.45rem; }
-  .pali-tip__logo { width: 16px; height: 16px; flex: none; margin-top: 0.15rem; }
-  .pali-tip__senses { margin: 0; padding: 0; list-style: none; }
-  .pali-tip__senses li { margin: 0 0 0.2rem; }
-  .pali-tip__lemma { font-weight: 600; }
-  .pali-tip__pos { color: var(--muted); font-style: italic; margin: 0 0.3rem; }
-  .pali-tip__more { color: var(--muted); font-size: 0.78rem; }
+  .pali-tip__def {
+    margin: 0 0 0.7rem; padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--sand);
+    font-family: var(--serif); font-style: italic; color: #4a3d30; font-size: 0.92rem;
+  }
+  .pali-tip__lemma {
+    font-family: var(--serif); font-weight: 600; color: var(--oxblood);
+    font-size: 1.02rem; margin-top: 0.55rem;
+  }
+  .pali-tip__lemma:first-child, .pali-tip__def + .pali-tip__lemma { margin-top: 0; }
+  .pali-tip__sense { margin: 0.05rem 0; }
+  .pali-tip__pos {
+    font-family: var(--sans); font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--muted); margin-right: 0.45rem;
+  }
+  .pali-tip__more {
+    margin-top: 0.45rem; font-family: var(--sans);
+    font-size: 0.72rem; color: var(--muted); font-style: italic;
+  }
+  .pali-tip__src {
+    display: flex; align-items: center; gap: 0.4rem;
+    margin-top: 0.75rem; padding-top: 0.55rem; border-top: 1px solid var(--sand);
+    font-family: var(--sans); font-size: 0.66rem; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--muted);
+  }
+  .pali-tip__logo { width: 13px; height: 13px; display: block; flex: none; }
   .pali-hl {
     position: fixed; z-index: 49; pointer-events: none;
     border-bottom: 2px solid var(--oxblood); background: rgba(117, 40, 3, 0.07);
@@ -31,6 +49,7 @@
 
 <script>
   import { PALI_LETTERS, wordAt } from '../lib/pali.mjs';
+  import { groupSenses } from '../lib/dpd-render.mjs';
 
   type Sense = { lemma: string; pos: string; meaning: string };
   type Entry = { senses: Sense[]; term: string | null };
@@ -85,13 +104,17 @@
   }
 
   function dpdHtml(senses: Sense[]) {
-    const items = senses.slice(0, TIP_CAP).map((s) =>
-      `<li><span class="pali-tip__lemma">${escapeHtml(s.lemma)}</span>` +
-      (s.pos ? `<span class="pali-tip__pos">${escapeHtml(s.pos)}</span>` : ' ') +
-      `${escapeHtml(s.meaning)}</li>`).join('');
-    const more = senses.length > TIP_CAP ? `<div class="pali-tip__more">+${senses.length - TIP_CAP} more — click for all</div>` : '';
-    return `<div class="pali-tip__dpd"><img class="pali-tip__logo" src="/dpd-logo-48.png" alt="DPD" />` +
-      `<ul class="pali-tip__senses">${items}</ul></div>${more}`;
+    const groups = groupSenses(senses.slice(0, TIP_CAP));
+    const body = groups.map((g) =>
+      `<div class="pali-tip__lemma">${escapeHtml(g.lemma)}</div>` +
+      g.items.map((it) =>
+        `<div class="pali-tip__sense">` +
+        (it.pos ? `<span class="pali-tip__pos">${escapeHtml(it.pos)}</span>` : '') +
+        `${escapeHtml(it.meaning)}</div>`).join('')).join('');
+    const more = senses.length > TIP_CAP
+      ? `<div class="pali-tip__more">+${senses.length - TIP_CAP} more — click to expand</div>` : '';
+    return body + more +
+      `<div class="pali-tip__src"><img class="pali-tip__logo" src="/dpd-logo-48.png" alt="" />Digital Pāli Dictionary</div>`;
   }
 
   // The curated tooltip text, if any, is read from TermDialog's inlined defs blob.
@@ -160,6 +183,7 @@
     raf = requestAnimationFrame(() => { raf = 0; onMove(e); });
   });
   document.addEventListener('scroll', hide, true);
+  document.addEventListener('mouseleave', () => { hide(); lastWord = ''; });
 
   document.addEventListener('click', async (e) => {
     const sel = window.getSelection();
@@ -175,6 +199,7 @@
     const data = await load(root.dataset.dpdSrc!);
     const entry = data[word];
     if (!entry) return;
+    hide(); // don't leave the hover tip/highlight lingering behind the modal
     document.dispatchEvent(new CustomEvent('suttamula:open-dialog', {
       detail: { title: entry.term || entry.senses[0]?.lemma || word, senses: entry.senses, term: entry.term },
     }));
