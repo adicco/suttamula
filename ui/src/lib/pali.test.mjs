@@ -30,3 +30,25 @@ test('wordAt returns null on whitespace/punctuation', () => {
   assert.equal(wordAt('evaṃ me', 4), null); // the space
   assert.equal(wordAt('— evaṃ', 0), null);  // the dash
 });
+
+// Niggahīta normalization: U+1E41 (dot above, corpus form) → U+1E43 (dot below, DPD form)
+const DOT_ABOVE = 'ṁ'; // ṁ
+const DOT_BELOW = 'ṃ'; // ṃ
+
+test('tokenizePali normalizes dot-above niggahīta to dot-below', () => {
+  assert.deepEqual(
+    tokenizePali(`jarāmaraṇa${DOT_ABOVE}`),
+    [`jarāmaraṇa${DOT_BELOW}`]
+  );
+  assert.deepEqual(
+    tokenizePali(`dhamma${DOT_ABOVE} `),
+    [`dhamma${DOT_BELOW}`]
+  );
+});
+
+test('wordAt normalizes dot-above niggahīta to dot-below', () => {
+  assert.equal(
+    wordAt(`jarāmaraṇa${DOT_ABOVE}`, 3),
+    `jarāmaraṇa${DOT_BELOW}`
+  );
+});
